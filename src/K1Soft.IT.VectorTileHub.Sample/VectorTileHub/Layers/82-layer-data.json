@@ -1,0 +1,41 @@
+{
+  "id": 82,
+  "layerKey": "parcels",
+  "layerName": "Parcels Layer",
+  "enabled": true,
+  "provider": {
+    "type": "SqlServer",
+    "connectionStringName": "Default",
+    "tableName": "[UALSDb].[ualsdataview].[LayerData_82]",
+    "idColumn": "Id",
+    "geometryColumn": "Geom",
+    "sourceSrid": 4326
+  },
+  "tile": {
+    "minZoom": 12,
+    "maxZoom": 21,
+    "extent": 4096,
+    "buffer": 64,
+    "clipGeometry": true,
+    "returnEmptyTileOutsideZoomRange": true,
+    "allowOnDemandGeneration": true
+  },
+  "attributes": {
+    "include": [
+      "Id",
+      "LayerId",
+      "DISTRICT",
+      "SUBMUNICIPALITY",
+      "SUBDISTRICT_NAME",
+      "PARCELNUMBER",
+      "PARCEL_LANDUSE",
+      "LAND_USES",
+      "PLAN_NUMBER",
+      "BlockNumber"
+    ]
+  },
+  "cache": {
+    "enabled": true,
+    "ttlMinutes": 0
+  }
+}

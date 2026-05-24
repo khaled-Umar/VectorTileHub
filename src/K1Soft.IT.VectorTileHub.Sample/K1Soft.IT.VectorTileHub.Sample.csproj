@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.AspNetCore\K1Soft.IT.VectorTileHub.AspNetCore.csproj" />
+    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Providers.SqlServer\K1Soft.IT.VectorTileHub.Providers.SqlServer.csproj" />
+    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Storage\K1Soft.IT.VectorTileHub.Storage.csproj" />
+    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Jobs\K1Soft.IT.VectorTileHub.Jobs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.22" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>K1Soft.IT.VectorTileHub.Sample</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

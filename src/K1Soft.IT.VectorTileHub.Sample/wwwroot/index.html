@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VectorTileHub Sample Map</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.2.1/ol.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <aside class="panel">
+      <div>
+        <p class="eyebrow">VectorTileHub</p>
+        <h1>Layer 82 map preview</h1>
+        <p class="summary">SQL Server vector tiles from the sample layer configuration, rendered with a restrained parcel style.</p>
+      </div>
+
+      <section class="status-panel">
+        <div class="status-row">
+          <span>Layer</span>
+          <strong id="layerName">Loading</strong>
+        </div>
+        <div class="status-row">
+          <span>Zoom range</span>
+          <strong id="zoomRange">-</strong>
+        </div>
+        <div class="status-row">
+          <span>Tile source</span>
+          <strong id="tileSource">/vector-tile-hub</strong>
+        </div>
+      </section>
+
+      <section class="legend">
+        <span class="legend-swatch"></span>
+        <span>Parcel polygons use amber fill and dark cadastral boundaries.</span>
+      </section>
+
+      <nav class="links">
+        <a href="/vector-tile-hub/layers">Layer metadata</a>
+        <a href="/vector-tile-hub/health">Health</a>
+        <a href="/vector-tile-hub/jobs">Jobs</a>
+      </nav>
+    </aside>
+
+    <section class="map-wrap">
+      <div id="map" class="map"></div>
+      <div id="message" class="message">Loading sample layer metadata</div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/ol@10.2.1/dist/ol.js"></script>
+  <script src="/map.js"></script>
+</body>
+</html>

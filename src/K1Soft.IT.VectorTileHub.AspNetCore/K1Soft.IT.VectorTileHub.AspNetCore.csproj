@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Core\K1Soft.IT.VectorTileHub.Core.csproj" />
+    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Storage\K1Soft.IT.VectorTileHub.Storage.csproj" />
+    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Jobs\K1Soft.IT.VectorTileHub.Jobs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>K1Soft.IT.VectorTileHub.AspNetCore</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
