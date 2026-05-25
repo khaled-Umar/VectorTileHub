@@ -22,7 +22,6 @@
   },
   "attributes": {
     "include": [
-      "Id",
       "LayerId",
       "DISTRICT",
       "SUBMUNICIPALITY",
