@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.AspNetCore\K1Soft.IT.VectorTileHub.AspNetCore.csproj" />
+    <!-- Single facade reference brings the whole server stack (AspNetCore -> Core/Storage/Jobs).
+         The database provider stays a separate, pluggable reference (provider-agnostic facade). -->
+    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Server\K1Soft.IT.VectorTileHub.Server.csproj" />
     <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Providers.SqlServer\K1Soft.IT.VectorTileHub.Providers.SqlServer.csproj" />
-    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Storage\K1Soft.IT.VectorTileHub.Storage.csproj" />
-    <ProjectReference Include="..\K1Soft.IT.VectorTileHub.Jobs\K1Soft.IT.VectorTileHub.Jobs.csproj" />
   </ItemGroup>
 
   <ItemGroup>

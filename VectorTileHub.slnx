@@ -12,6 +12,7 @@
     <Project Path="src/K1Soft.IT.VectorTileHub.Providers.Oracle/K1Soft.IT.VectorTileHub.Providers.Oracle.csproj" />
     <Project Path="src/K1Soft.IT.VectorTileHub.Providers.SqlServer/K1Soft.IT.VectorTileHub.Providers.SqlServer.csproj" />
     <Project Path="src/K1Soft.IT.VectorTileHub.Sample/K1Soft.IT.VectorTileHub.Sample.csproj" />
+    <Project Path="src/K1Soft.IT.VectorTileHub.Server/K1Soft.IT.VectorTileHub.Server.csproj" />
     <Project Path="src/K1Soft.IT.VectorTileHub.Storage/K1Soft.IT.VectorTileHub.Storage.csproj" />
   </Folder>
   <Folder Name="/tests/">
