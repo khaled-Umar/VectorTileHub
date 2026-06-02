@@ -14,7 +14,9 @@ if (args.Length >= 1 && string.Equals(args[0], "gen-style", StringComparison.Ord
 {
     var sld = args.Length >= 2 ? args[1] : "tmp/layerStyle.sld";
     var outPath = args.Length >= 3 ? args[2] : "wwwroot/ol-style.json";
-    var json = SldToStyleConverter.Convert(sld, sourceLayer: "parcels", tileUrlTemplate: "/vector-tile-hub/tiles/82/{z}/{x}/{y}.pbf", minZoom: 12, maxZoom: 21);
+    // maxZoom = the layer's top tile zoom. The viewer over-zooms beyond this (renders these tiles
+    // scaled) rather than requesting tiles above the layer's maxZoom.
+    var json = SldToStyleConverter.Convert(sld, sourceLayer: "parcels", tileUrlTemplate: "/vector-tile-hub/tiles/82/{z}/{x}/{y}.pbf", minZoom: 12, maxZoom: 17);
     Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outPath))!);
     File.WriteAllText(outPath, json);
     Console.WriteLine($"Wrote {outPath} from {sld}.");

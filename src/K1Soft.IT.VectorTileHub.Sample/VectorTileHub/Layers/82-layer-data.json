@@ -14,8 +14,7 @@
   },
   "tile": {
     "minZoom": 12,
-    "maxZoom": 21,
-    "maxGenerationZoom": 17,
+    "maxZoom": 17,
     "extent": 4096,
     "buffer": 64,
     "clipGeometry": true,
