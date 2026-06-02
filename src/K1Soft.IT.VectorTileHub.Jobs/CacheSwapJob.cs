@@ -33,7 +33,7 @@ public sealed class CacheSwapJob
 
         if (regenerateAfterSwap)
         {
-            _jobs.Enqueue<CacheGenerationJob>(job => job.Execute(layerId, null, null, null, CancellationToken.None));
+            _jobs.Enqueue<CacheGenerationJob>(job => job.Execute(layerId, null, null, null, null, null, CancellationToken.None));
         }
 
         if (deleteOldVersion && !string.IsNullOrWhiteSpace(oldVersion) && !string.Equals(oldVersion, newVersion, StringComparison.OrdinalIgnoreCase))

@@ -16,7 +16,7 @@ public sealed class AdminCacheController : ControllerBase
     [HttpPost("{layerId:int}/cache/generate")]
     public IActionResult Generate(int layerId, [FromBody] CacheGenerateRequest? request, [FromServices] IBackgroundJobClient jobs)
     {
-        var jobId = jobs.Enqueue<CacheGenerationJob>(job => job.Execute(layerId, request == null ? null : request.MinZoom, request == null ? null : request.MaxZoom, request == null ? null : request.Variants, CancellationToken.None));
+        var jobId = jobs.Enqueue<CacheGenerationJob>(job => job.Execute(layerId, request == null ? null : request.MinZoom, request == null ? null : request.MaxZoom, request == null ? null : request.Variants, request == null ? null : request.MaxDegreeOfParallelism, null, CancellationToken.None));
         return Accepted(value: new { jobId, layerId, status = "Enqueued", message = "Cache generation job enqueued" });
     }
 
@@ -85,7 +85,7 @@ public sealed class AdminCacheController : ControllerBase
     }
 }
 
-public sealed record CacheGenerateRequest(int? MinZoom, int? MaxZoom, string[]? Variants);
+public sealed record CacheGenerateRequest(int? MinZoom, int? MaxZoom, string[]? Variants, int? MaxDegreeOfParallelism);
 
 public sealed record CacheDeleteRequest(string? CacheVersion, bool DeleteAllVersions);
 

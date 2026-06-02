@@ -1,4 +1,5 @@
 using Hangfire;
+using Hangfire.Console;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,7 +9,8 @@ public static class JobsServiceCollectionExtensions
 {
     public static IServiceCollection AddVectorTileHubJobs(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddHangfire(config => config.UseInMemoryStorage());
+        // UseConsole() enables per-job log lines and progress bars in the Hangfire dashboard.
+        services.AddHangfire(config => config.UseInMemoryStorage().UseConsole());
         services.AddHangfireServer();
         services.AddTransient<CacheGenerationJob>();
         services.AddTransient<CacheDeletionJob>();
