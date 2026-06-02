@@ -3,6 +3,7 @@ namespace K1Soft.IT.VectorTileHub;
 public enum VectorTileResultStatus
 {
     Ok,
+    NoContent,
     BadRequest,
     Unauthorized,
     Forbidden,
@@ -27,5 +28,12 @@ public sealed class VectorTileResult
     {
         Status = status,
         Error = error
+    };
+
+    /// <summary>No tile exists for this coordinate (e.g. outside the layer's configured extent). Maps to HTTP 204.</summary>
+    public static VectorTileResult NoContent() => new()
+    {
+        Status = VectorTileResultStatus.NoContent,
+        IsEmpty = true
     };
 }

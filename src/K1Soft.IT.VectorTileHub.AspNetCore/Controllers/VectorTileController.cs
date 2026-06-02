@@ -34,6 +34,7 @@ public sealed class VectorTileController : ControllerBase
         return result.Status switch
         {
             VectorTileResultStatus.Ok => File(result.TileBytes, result.ContentType),
+            VectorTileResultStatus.NoContent => NoContent(),
             VectorTileResultStatus.BadRequest => BadRequest(new { error = result.Error }),
             VectorTileResultStatus.NotFound => NotFound(new { error = result.Error }),
             VectorTileResultStatus.ServiceUnavailable => StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = result.Error }),

@@ -76,6 +76,61 @@ public static class TileCoordinateUtils
         }
     }
 
+    /// <summary>
+    /// Converts a configured layer extent to a Web Mercator (EPSG:3857) envelope for tile math.
+    /// Supports source SRIDs 4326 (lon/lat) and 3857 (mercator).
+    /// </summary>
+    public static Envelope ToMercatorEnvelope(ExtentConfig extent)
+    {
+        switch (extent.Srid)
+        {
+            case 3857:
+                return new Envelope(extent.MinX, extent.MaxX, extent.MinY, extent.MaxY);
+            case 4326:
+                var (minX, minY) = LonLatToMercator(extent.MinX, extent.MinY);
+                var (maxX, maxY) = LonLatToMercator(extent.MaxX, extent.MaxY);
+                return new Envelope(minX, maxX, minY, maxY);
+            default:
+                throw new NotSupportedException(
+                    $"Extent SRID {extent.Srid} is not supported; use 4326 (lon/lat) or 3857 (Web Mercator).");
+        }
+    }
+
+    public static (double x, double y) LonLatToMercator(double lon, double lat)
+    {
+        var clampedLat = Math.Clamp(lat, -85.05112878, 85.05112878);
+        var x = lon * OriginShift / 180.0;
+        var y = Math.Log(Math.Tan((90.0 + clampedLat) * Math.PI / 360.0)) / (Math.PI / 180.0) * OriginShift / 180.0;
+        return (x, y);
+    }
+
+    /// <summary>
+    /// Counts (without enumerating) the tiles intersecting <paramref name="bbox"/> across the zoom
+    /// range. Used to compute generation progress without materializing the full tile list.
+    /// </summary>
+    public static long CountAffectedTiles(Envelope bbox, int minZoom, int maxZoom)
+    {
+        long total = 0;
+        for (var zoom = minZoom; zoom <= maxZoom; zoom++)
+        {
+            if (zoom < 0 || zoom > 31)
+            {
+                continue;
+            }
+
+            var min = WorldToTile(bbox.MinX, bbox.MaxY, zoom);
+            var max = WorldToTile(bbox.MaxX, bbox.MinY, zoom);
+            var limit = (1 << zoom) - 1;
+            var x0 = Math.Clamp(min.x, 0, limit);
+            var x1 = Math.Clamp(max.x, 0, limit);
+            var y0 = Math.Clamp(min.y, 0, limit);
+            var y1 = Math.Clamp(max.y, 0, limit);
+            total += (long)(x1 - x0 + 1) * (y1 - y0 + 1);
+        }
+
+        return total;
+    }
+
     private static (int x, int y) WorldToTile(double mx, double my, int zoom)
     {
         var tiles = Math.Pow(2, zoom);

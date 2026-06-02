@@ -32,6 +32,14 @@ public sealed class SampleExtentController : ControllerBase
             return NotFound(new { error = "Layer not found" });
         }
 
+        // Prefer the configured extent — no database round-trip. Falls back to querying the data
+        // bounds only when the layer has no extent configured.
+        if (layer.Extent is { } configured)
+        {
+            var merc = TileCoordinateUtils.ToMercatorEnvelope(configured);
+            return Ok(new { minX = merc.MinX, minY = merc.MinY, maxX = merc.MaxX, maxY = merc.MaxY, srid = 3857 });
+        }
+
         var connectionString = !string.IsNullOrWhiteSpace(layer.Provider.ConnectionString)
             ? layer.Provider.ConnectionString
             : _config.GetConnectionString(layer.Provider.ConnectionStringName ?? "");

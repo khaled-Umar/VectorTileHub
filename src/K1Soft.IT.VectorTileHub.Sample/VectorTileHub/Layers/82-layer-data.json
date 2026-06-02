@@ -9,16 +9,25 @@
     "tableName": "[UALSDb].[ualsdataview].[LayerData_82]",
     "idColumn": "Id",
     "geometryColumn": "Geom",
-    "sourceSrid": 4326
+    "sourceSrid": 4326,
+    "commandTimeoutSeconds": 120
   },
   "tile": {
     "minZoom": 12,
     "maxZoom": 21,
+    "maxGenerationZoom": 17,
     "extent": 4096,
     "buffer": 64,
     "clipGeometry": true,
     "returnEmptyTileOutsideZoomRange": true,
     "allowOnDemandGeneration": true
+  },
+  "extent": {
+    "minX": 38.93,
+    "minY": 21.40,
+    "maxX": 39.56,
+    "maxY": 22.36,
+    "srid": 4326
   },
   "attributes": {
     "include": [
@@ -26,7 +35,8 @@
       "LayerId",
       "DISTRICT",
       "SUBMUNICIPALITY",
-      "SUBDISTRICT_NAME",
+        "SUBDISTRICT_NAME",
+
       "PARCELNUMBER",
       "SERVICE_NAME",
       "PARCEL_LANDUSE",

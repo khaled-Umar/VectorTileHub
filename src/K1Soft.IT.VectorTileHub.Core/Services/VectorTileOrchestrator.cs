@@ -61,6 +61,14 @@ public sealed class VectorTileOrchestrator : IVectorTileService
                 : VectorTileResult.Failure(VectorTileResultStatus.BadRequest, "Zoom is outside layer range");
         }
 
+        // Outside the layer's configured data extent there is nothing to serve — short-circuit with
+        // 204 before any cache lookup or database query.
+        if (layer.Extent is { } extent &&
+            !TileCoordinateUtils.ToMercatorEnvelope(extent).Intersects(context.TileEnvelope))
+        {
+            return VectorTileResult.NoContent();
+        }
+
         var variant = _variants.Resolve(layer, variantKey);
         if (variant is null)
         {
@@ -93,9 +101,20 @@ public sealed class VectorTileOrchestrator : IVectorTileService
         TileGeneration generated;
         try
         {
-            // Single-flight: concurrent misses for the same tile generate once.
-            generated = await InFlight.GetOrAdd(key.ToStringKey(), _ => new Lazy<Task<TileGeneration>>(
-                () => GenerateAsync(layer, variant, context, z, x, y, runtime, cancellationToken))).Value;
+            // Single-flight: concurrent misses for the same tile generate once. Generation runs with
+            // CancellationToken.None so one client aborting (e.g. panning the map) cannot cancel a tile
+            // that other in-flight requests are still waiting on — each caller's own token only cancels
+            // *their* await via WaitAsync, while generation completes and populates the cache.
+            var generation = InFlight.GetOrAdd(key.ToStringKey(), _ => new Lazy<Task<TileGeneration>>(
+                () => GenerateAsync(layer, variant, context, z, x, y, runtime, CancellationToken.None)));
+            generated = await generation.Value.WaitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The client aborted the request (routine with slippy-map pan/zoom). Not a server error —
+            // log quietly and let ASP.NET Core treat it as an aborted request (no 503, no error log).
+            _logger.LogDebug("VectorTileHub tile request canceled by client for layer {LayerId} tile {Z}/{X}/{Y}", layerId, z, x, y);
+            throw;
         }
         catch (Exception ex)
         {
