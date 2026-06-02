@@ -24,6 +24,11 @@ public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
 
         var sql = BuildSql(query, out var filterValues);
         await using var command = new OracleCommand(sql, connection) { BindByName = true };
+        if (layer.Provider.CommandTimeoutSeconds is { } commandTimeout)
+        {
+            command.CommandTimeout = commandTimeout;
+        }
+
         command.Parameters.Add(":srid", OracleDbType.Int32).Value = layer.Provider.SourceSrid;
         var envelope = layer.Provider.SourceSrid == 4326 ? ToGeographicEnvelope(query.Envelope) : query.Envelope;
         command.Parameters.Add(":minx", OracleDbType.Double).Value = envelope.MinX;

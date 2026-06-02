@@ -27,6 +27,11 @@ public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
 
         var sql = BuildSql(query, out var filterValues);
         await using var command = new SqlCommand(sql, connection);
+        if (layer.Provider.CommandTimeoutSeconds is { } commandTimeout)
+        {
+            command.CommandTimeout = commandTimeout;
+        }
+
         command.Parameters.Add("@envelope", SqlDbType.VarBinary).Value = BuildEnvelopeWkb(query.Envelope, layer.Provider.SourceSrid);
         command.Parameters.Add("@srid", SqlDbType.Int).Value = layer.Provider.SourceSrid;
 
