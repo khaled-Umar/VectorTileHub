@@ -16,7 +16,7 @@ public static class LayerMetadataEndpoints
                 .ToArray();
 
             return Results.Ok(new { layers });
-        });
+        }).WithTags("Layers");
 
         endpoints.MapGet($"{options.RoutePrefix}/layers/{{layerId:int}}", (int layerId, IVectorTileLayerConfigProvider provider) =>
         {
@@ -24,19 +24,33 @@ public static class LayerMetadataEndpoints
             return layer is null || !layer.Enabled
                 ? Results.NotFound(new { error = "Layer not found" })
                 : Results.Ok(ToDto(layer, options.RoutePrefix));
-        });
+        }).WithTags("Layers");
     }
 
     private static LayerMetadataDto ToDto(VectorTileLayerConfig layer, string routePrefix)
     {
+        var variants = layer.CacheRules.Count > 0
+            ? layer.CacheRules.Select(r => r.VariantKey).ToArray()
+            : [VectorTileVariant.DefaultKey];
+
         return new LayerMetadataDto(
             layer.Id,
             layer.LayerKey,
             layer.LayerName,
             layer.Tile.MinZoom,
             layer.Tile.MaxZoom,
-            $"{routePrefix}/tiles/{layer.Id}/{{z}}/{{x}}/{{y}}.pbf");
+            $"{routePrefix}/tiles/{layer.Id}/{{z}}/{{x}}/{{y}}.pbf",
+            variants,
+            layer.Attributes.Include);
     }
 
-    private sealed record LayerMetadataDto(int Id, string LayerKey, string LayerName, int MinZoom, int MaxZoom, string TileUrlTemplate);
+    private sealed record LayerMetadataDto(
+        int Id,
+        string LayerKey,
+        string LayerName,
+        int MinZoom,
+        int MaxZoom,
+        string TileUrlTemplate,
+        string[] Variants,
+        string[] Attributes);
 }

@@ -9,7 +9,14 @@ public sealed class VectorTileLayerConfig
     public ProviderConfig Provider { get; set; } = new();
     public TileConfig Tile { get; set; } = new();
     public AttributeConfig Attributes { get; set; } = new();
-    public SecurityConfig? Security { get; set; }
+
+    /// <summary>
+    /// Filtered cache variants. Each rule yields an independently cached, separately
+    /// addressable variant selected by its <see cref="CacheRuleConfig.VariantKey"/>.
+    /// Empty = a single unfiltered "default" variant.
+    /// </summary>
+    public List<CacheRuleConfig> CacheRules { get; set; } = [];
+
     public LayerCacheConfig Cache { get; set; } = new();
 }
 
@@ -22,7 +29,6 @@ public sealed class ProviderConfig
     public string IdColumn { get; set; } = "Id";
     public string GeometryColumn { get; set; } = "Geom";
     public int SourceSrid { get; set; } = 3857;
-    public string? CustomFilter { get; set; }
 }
 
 public sealed class TileConfig
@@ -42,16 +48,14 @@ public sealed class AttributeConfig
     public string[] Include { get; set; } = [];
 }
 
-public sealed class SecurityConfig
-{
-    public bool? RequireAuthentication { get; set; }
-    public string? ScopeColumn { get; set; }
-    public Dictionary<string, string[]> ScopeMappings { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-}
-
 public sealed class LayerCacheConfig
 {
     public bool Enabled { get; set; } = true;
     public string? CacheRootFolder { get; set; }
-    public int TtlMinutes { get; set; }
+
+    /// <summary>
+    /// Tile age (minutes) after which a cached tile is considered stale and
+    /// refreshed in the background (stale-while-revalidate). 0 = never stale.
+    /// </summary>
+    public int RefreshPeriodMinutes { get; set; }
 }

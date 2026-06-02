@@ -7,15 +7,17 @@ using NetTopologySuite.Geometries;
 
 namespace K1Soft.IT.VectorTileHub.AspNetCore;
 
+// NOTE: The library applies NO authorization here. The host is responsible for
+// securing these admin endpoints (and the job dashboard) with its own policy.
 public static class AdminCacheEndpoints
 {
     public static void MapAdminCacheEndpoints(this IEndpointRouteBuilder endpoints, VectorTileHubOptions options)
     {
-        var group = endpoints.MapGroup($"{options.RoutePrefix}/admin/layers").RequireAuthorization();
+        var group = endpoints.MapGroup($"{options.RoutePrefix}/admin/layers").WithTags("Admin Cache");
 
         group.MapPost("/{layerId:int}/cache/generate", (int layerId, CacheGenerateRequest? request, IBackgroundJobClient jobs) =>
         {
-            var jobId = jobs.Enqueue<CacheGenerationJob>(job => job.Execute(layerId, request == null ? null : request.MinZoom, request == null ? null : request.MaxZoom, request == null ? null : request.Scopes, CancellationToken.None));
+            var jobId = jobs.Enqueue<CacheGenerationJob>(job => job.Execute(layerId, request == null ? null : request.MinZoom, request == null ? null : request.MaxZoom, request == null ? null : request.Variants, CancellationToken.None));
             return Results.Accepted(value: new { jobId, layerId, status = "Enqueued", message = "Cache generation job enqueued" });
         });
 
@@ -38,23 +40,23 @@ public static class AdminCacheEndpoints
             var runtime = await store.GetLayerRuntimeSettingsAsync(layerId, cancellationToken) ?? new VectorTileLayerRuntimeSettings { LayerId = layerId };
             var envelope = request.BoundingBox.ToEnvelope();
             var tiles = TileCoordinateUtils.GetAffectedTilesForZoomRange(envelope, layer.Tile.MinZoom, layer.Tile.MaxZoom).ToArray();
-            var scopes = request.Scopes is { Length: > 0 } ? request.Scopes : ["public"];
-            foreach (var scope in scopes)
+            var variants = request.Variants is { Length: > 0 }
+                ? request.Variants
+                : layer.CacheRules.Count > 0 ? layer.CacheRules.Select(r => r.VariantKey).ToArray() : [VectorTileVariant.DefaultKey];
+            foreach (var variant in variants)
             {
-                await cache.RemoveByEnvelopeAsync(layerId, envelope, layer.Tile.MinZoom, layer.Tile.MaxZoom, scope, runtime.ActiveCacheVersion, cancellationToken);
+                await cache.RemoveByEnvelopeAsync(layerId, envelope, layer.Tile.MinZoom, layer.Tile.MaxZoom, variant, runtime.ActiveCacheVersion, cancellationToken);
             }
 
             runtime.LastInvalidatedAt = DateTimeOffset.UtcNow;
             await store.UpsertLayerRuntimeSettingsAsync(runtime, cancellationToken);
-            return Results.Ok(new { layerId, tilesInvalidated = tiles.Length * scopes.Length, zoomLevelsAffected = tiles.Select(x => x.z).Distinct().Order().ToArray() });
+            return Results.Ok(new { layerId, tilesInvalidated = tiles.Length * variants.Length, zoomLevelsAffected = tiles.Select(x => x.z).Distinct().Order().ToArray() });
         });
 
         group.MapPost("/{layerId:int}/cache/notify-change", (int layerId, CacheNotifyChangeRequest request, IBackgroundJobClient jobs) =>
         {
-            var jobId = request.Regenerate
-                ? jobs.Enqueue<CacheInvalidationJob>(job => job.Execute(layerId, request.BoundingBox.MinX, request.BoundingBox.MinY, request.BoundingBox.MaxX, request.BoundingBox.MaxY, request.BoundingBox.Srid, null, CancellationToken.None))
-                : null;
-            return Results.Accepted(value: new { layerId, tilesAffected = 0, jobId, message = "Tiles invalidation accepted" });
+            var jobId = jobs.Enqueue<CacheInvalidationJob>(job => job.Execute(layerId, request.BoundingBox.MinX, request.BoundingBox.MinY, request.BoundingBox.MaxX, request.BoundingBox.MaxY, request.BoundingBox.Srid, request.Variants, CancellationToken.None));
+            return Results.Accepted(value: new { layerId, jobId, message = "Tiles refresh accepted" });
         });
 
         group.MapPost("/{layerId:int}/cache/swap", (int layerId, CacheSwapRequest? request, IBackgroundJobClient jobs) =>
@@ -73,10 +75,10 @@ public static class AdminCacheEndpoints
         });
     }
 
-    private sealed record CacheGenerateRequest(int? MinZoom, int? MaxZoom, string[]? Scopes);
+    private sealed record CacheGenerateRequest(int? MinZoom, int? MaxZoom, string[]? Variants);
     private sealed record CacheDeleteRequest(string? CacheVersion, bool DeleteAllVersions);
-    private sealed record CacheInvalidateRequest(BoundingBoxDto BoundingBox, string[]? Scopes);
-    private sealed record CacheNotifyChangeRequest(BoundingBoxDto BoundingBox, string ChangeType, bool Regenerate);
+    private sealed record CacheInvalidateRequest(BoundingBoxDto BoundingBox, string[]? Variants);
+    private sealed record CacheNotifyChangeRequest(BoundingBoxDto BoundingBox, string[]? Variants);
     private sealed record CacheSwapRequest(string? NewVersion, bool RegenerateAfterSwap, bool DeleteOldVersion);
 
     private sealed record BoundingBoxDto(double MinX, double MinY, double MaxX, double MaxY, int Srid)

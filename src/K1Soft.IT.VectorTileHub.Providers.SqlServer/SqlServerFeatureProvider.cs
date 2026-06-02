@@ -25,14 +25,14 @@ public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync(cancellationToken);
 
-        var sql = BuildSql(query, out var scopeValues);
+        var sql = BuildSql(query, out var filterValues);
         await using var command = new SqlCommand(sql, connection);
         command.Parameters.Add("@envelope", SqlDbType.VarBinary).Value = BuildEnvelopeWkb(query.Envelope, layer.Provider.SourceSrid);
         command.Parameters.Add("@srid", SqlDbType.Int).Value = layer.Provider.SourceSrid;
 
-        for (var i = 0; i < scopeValues.Length; i++)
+        for (var i = 0; i < filterValues.Length; i++)
         {
-            command.Parameters.Add($"@scope{i}", SqlDbType.NVarChar).Value = scopeValues[i];
+            command.Parameters.Add($"@v{i}", SqlDbType.NVarChar).Value = filterValues[i];
         }
 
         var features = new List<VectorTileFeature>();
@@ -82,7 +82,7 @@ public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
         throw new InvalidOperationException("SQL Server provider requires a connection string or connection string name.");
     }
 
-    private static string BuildSql(VectorTileFeatureQuery query, out string[] scopeValues)
+    private static string BuildSql(VectorTileFeatureQuery query, out string[] filterValues)
     {
         var layer = query.LayerConfig;
         var attributes = layer.Attributes.Include.Select(QuoteIdentifier).ToArray();
@@ -94,15 +94,11 @@ public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
         sql.Append($"SELECT {idColumn}, {geometryColumn}.STAsBinary() AS GeomWkb{projection} FROM {table} ");
         sql.Append($"WHERE {geometryColumn}.STIntersects(geometry::STGeomFromWKB(@envelope, @srid)) = 1");
 
-        scopeValues = query.SecurityScope.FilterValues ?? [];
-        if (scopeValues.Length > 0 && !string.IsNullOrWhiteSpace(layer.Security?.ScopeColumn))
+        var predicate = VariantFilterSql.Build(query.Variant.Filter, QuoteIdentifier, i => $"@v{i}", out filterValues);
+        if (predicate is not null)
         {
-            var scopeColumn = QuoteIdentifier(layer.Security.ScopeColumn);
             sql.Append(" AND ");
-            sql.Append(scopeColumn);
-            sql.Append(" IN (");
-            sql.Append(string.Join(", ", scopeValues.Select((_, index) => $"@scope{index}")));
-            sql.Append(')');
+            sql.Append(predicate);
         }
 
         return sql.ToString();

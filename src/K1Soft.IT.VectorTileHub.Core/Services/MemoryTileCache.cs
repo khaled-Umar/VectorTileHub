@@ -12,20 +12,16 @@ public sealed class MemoryTileCache : IVectorTileCache
         _cache = cache;
     }
 
-    public Task<byte[]?> GetAsync(VectorTileCacheKey key, CancellationToken cancellationToken)
+    public Task<CachedTile?> GetAsync(VectorTileCacheKey key, CancellationToken cancellationToken)
     {
-        return Task.FromResult(_cache.TryGetValue<byte[]>(key.ToStringKey(), out var value) ? value : null);
+        return Task.FromResult(_cache.TryGetValue<CachedTile>(key.ToStringKey(), out var value) ? value : null);
     }
 
     public Task SetAsync(VectorTileCacheKey key, byte[] tileBytes, VectorTileCacheOptions options, CancellationToken cancellationToken)
     {
-        var entryOptions = new MemoryCacheEntryOptions();
-        if (options.TtlMinutes > 0)
-        {
-            entryOptions.SetSlidingExpiration(TimeSpan.FromMinutes(options.TtlMinutes));
-        }
-
-        _cache.Set(key.ToStringKey(), tileBytes, entryOptions);
+        // Stale-while-revalidate keeps stale tiles available, so memory entries are not
+        // evicted by the layer refresh period; staleness is computed from WrittenAt.
+        _cache.Set(key.ToStringKey(), new CachedTile(tileBytes, DateTimeOffset.UtcNow));
         return Task.CompletedTask;
     }
 
@@ -35,8 +31,13 @@ public sealed class MemoryTileCache : IVectorTileCache
         return Task.CompletedTask;
     }
 
-    public Task RemoveByEnvelopeAsync(int layerId, Envelope boundingBox, int minZoom, int maxZoom, string? scopeKey, string cacheVersion, CancellationToken cancellationToken)
+    public Task RemoveByEnvelopeAsync(int layerId, Envelope boundingBox, int minZoom, int maxZoom, string? variantKey, string cacheVersion, CancellationToken cancellationToken)
     {
+        foreach (var (z, x, y) in TileCoordinateUtils.GetAffectedTilesForZoomRange(boundingBox, minZoom, maxZoom))
+        {
+            _cache.Remove(new VectorTileCacheKey(layerId, z, x, y, variantKey ?? VectorTileVariant.DefaultKey, cacheVersion).ToStringKey());
+        }
+
         return Task.CompletedTask;
     }
 }

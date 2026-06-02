@@ -1,14 +1,20 @@
 using Hangfire;
+using Microsoft.Extensions.Options;
 
 namespace K1Soft.IT.VectorTileHub.Jobs;
 
+/// <summary>
+/// Blue/green cache replacement (job A): build into a new empty version folder and
+/// flip the active version immediately; a separate <see cref="CacheDeletionJob"/>
+/// (job B) removes the old version afterward, so cutover never waits on deletion.
+/// </summary>
 public sealed class CacheSwapJob
 {
     private readonly IVectorTileRuntimeSettingsStore _settings;
     private readonly IBackgroundJobClient _jobs;
-    private readonly Microsoft.Extensions.Options.IOptions<VectorTileHubOptions> _options;
+    private readonly IOptions<VectorTileHubOptions> _options;
 
-    public CacheSwapJob(IVectorTileRuntimeSettingsStore settings, IBackgroundJobClient jobs, Microsoft.Extensions.Options.IOptions<VectorTileHubOptions> options)
+    public CacheSwapJob(IVectorTileRuntimeSettingsStore settings, IBackgroundJobClient jobs, IOptions<VectorTileHubOptions> options)
     {
         _settings = settings;
         _jobs = jobs;
@@ -18,13 +24,9 @@ public sealed class CacheSwapJob
     public async Task Execute(int layerId, string newVersion, bool regenerateAfterSwap, bool deleteOldVersion, CancellationToken cancellationToken)
     {
         var runtime = await _settings.GetLayerRuntimeSettingsAsync(layerId, cancellationToken) ?? new VectorTileLayerRuntimeSettings { LayerId = layerId };
-        if (runtime.CacheGenerationStatus == CacheGenerationStatus.Running)
-        {
-            throw new InvalidOperationException($"Layer {layerId} already has a running cache operation.");
-        }
 
         var oldVersion = runtime.ActiveCacheVersion;
-        Directory.CreateDirectory(Path.Combine(_options.Value.DefaultCacheRootFolder, layerId.ToString(), "public", newVersion));
+        Directory.CreateDirectory(Path.Combine(_options.Value.DefaultCacheRootFolder, layerId.ToString(), newVersion));
         runtime.ActiveCacheVersion = newVersion;
         runtime.UpdatedAt = DateTimeOffset.UtcNow;
         await _settings.UpsertLayerRuntimeSettingsAsync(runtime, cancellationToken);
@@ -34,9 +36,9 @@ public sealed class CacheSwapJob
             _jobs.Enqueue<CacheGenerationJob>(job => job.Execute(layerId, null, null, null, CancellationToken.None));
         }
 
-        if (deleteOldVersion && !string.IsNullOrWhiteSpace(oldVersion))
+        if (deleteOldVersion && !string.IsNullOrWhiteSpace(oldVersion) && !string.Equals(oldVersion, newVersion, StringComparison.OrdinalIgnoreCase))
         {
-            var deleteJobId = _jobs.Enqueue<CacheDeletionJob>(job => job.Execute(layerId, oldVersion, false, CancellationToken.None));
+            _jobs.Enqueue<CacheDeletionJob>(job => job.Execute(layerId, oldVersion, false, CancellationToken.None));
         }
     }
 }

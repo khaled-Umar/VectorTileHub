@@ -5,17 +5,17 @@ public sealed record VectorTileCacheKey(
     int Z,
     int X,
     int Y,
-    string ScopeKey,
+    string VariantKey,
     string CacheVersion)
 {
-    public string ToStringKey() => $"{LayerId}:{ScopeKey}:{CacheVersion}:{Z}:{X}:{Y}";
+    public string ToStringKey() => $"{LayerId}:{VariantKey}:{CacheVersion}:{Z}:{X}:{Y}";
 
     public string ToDiskPath(string cacheRoot)
     {
         return Path.Combine(
             cacheRoot,
             LayerId.ToString(),
-            Sanitize(ScopeKey),
+            Sanitize(VariantKey),
             Sanitize(CacheVersion),
             Z.ToString(),
             X.ToString(),

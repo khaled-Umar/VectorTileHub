@@ -13,7 +13,7 @@ public sealed class CompositeTileCache : IVectorTileCache
         _disk = disk;
     }
 
-    public async Task<byte[]?> GetAsync(VectorTileCacheKey key, CancellationToken cancellationToken)
+    public async Task<CachedTile?> GetAsync(VectorTileCacheKey key, CancellationToken cancellationToken)
     {
         if (_memory is not null)
         {
@@ -32,7 +32,7 @@ public sealed class CompositeTileCache : IVectorTileCache
         var diskValue = await _disk.GetAsync(key, cancellationToken);
         if (diskValue is not null && _memory is not null)
         {
-            await _memory.SetAsync(key, diskValue, new VectorTileCacheOptions { CacheVersion = key.CacheVersion }, cancellationToken);
+            await _memory.SetAsync(key, diskValue.Bytes, new VectorTileCacheOptions { CacheVersion = key.CacheVersion }, cancellationToken);
         }
 
         return diskValue;
@@ -64,16 +64,16 @@ public sealed class CompositeTileCache : IVectorTileCache
         }
     }
 
-    public async Task RemoveByEnvelopeAsync(int layerId, Envelope boundingBox, int minZoom, int maxZoom, string? scopeKey, string cacheVersion, CancellationToken cancellationToken)
+    public async Task RemoveByEnvelopeAsync(int layerId, Envelope boundingBox, int minZoom, int maxZoom, string? variantKey, string cacheVersion, CancellationToken cancellationToken)
     {
         if (_memory is not null)
         {
-            await _memory.RemoveByEnvelopeAsync(layerId, boundingBox, minZoom, maxZoom, scopeKey, cacheVersion, cancellationToken);
+            await _memory.RemoveByEnvelopeAsync(layerId, boundingBox, minZoom, maxZoom, variantKey, cacheVersion, cancellationToken);
         }
 
         if (_disk is not null)
         {
-            await _disk.RemoveByEnvelopeAsync(layerId, boundingBox, minZoom, maxZoom, scopeKey, cacheVersion, cancellationToken);
+            await _disk.RemoveByEnvelopeAsync(layerId, boundingBox, minZoom, maxZoom, variantKey, cacheVersion, cancellationToken);
         }
     }
 }

@@ -22,8 +22,8 @@ public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
         await using var connection = new OracleConnection(ResolveConnectionString(layer.Provider));
         await connection.OpenAsync(cancellationToken);
 
-        var sql = BuildSql(query, out var scopeValues);
-        await using var command = new OracleCommand(sql, connection);
+        var sql = BuildSql(query, out var filterValues);
+        await using var command = new OracleCommand(sql, connection) { BindByName = true };
         command.Parameters.Add(":srid", OracleDbType.Int32).Value = layer.Provider.SourceSrid;
         var envelope = layer.Provider.SourceSrid == 4326 ? ToGeographicEnvelope(query.Envelope) : query.Envelope;
         command.Parameters.Add(":minx", OracleDbType.Double).Value = envelope.MinX;
@@ -31,9 +31,9 @@ public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
         command.Parameters.Add(":maxx", OracleDbType.Double).Value = envelope.MaxX;
         command.Parameters.Add(":maxy", OracleDbType.Double).Value = envelope.MaxY;
 
-        for (var i = 0; i < scopeValues.Length; i++)
+        for (var i = 0; i < filterValues.Length; i++)
         {
-            command.Parameters.Add($":scope{i}", OracleDbType.Varchar2).Value = scopeValues[i];
+            command.Parameters.Add($":v{i}", OracleDbType.Varchar2).Value = filterValues[i];
         }
 
         var features = new List<VectorTileFeature>();
@@ -79,7 +79,7 @@ public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
         throw new InvalidOperationException("Oracle provider requires a connection string or connection string name.");
     }
 
-    private static string BuildSql(VectorTileFeatureQuery query, out string[] scopeValues)
+    private static string BuildSql(VectorTileFeatureQuery query, out string[] filterValues)
     {
         var layer = query.LayerConfig;
         var table = ValidateTableName(layer.Provider.TableName);
@@ -92,12 +92,11 @@ public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
         sql.Append($"SELECT {idColumn}, SDO_UTIL.TO_WKBGEOMETRY({geometryColumn}) AS GEOM_WKB{projection} FROM {table} ");
         sql.Append($"WHERE SDO_RELATE({geometryColumn}, SDO_GEOMETRY(2003, :srid, NULL, SDO_ELEM_INFO_ARRAY(1, 1003, 3), SDO_ORDINATE_ARRAY(:minx, :miny, :maxx, :maxy)), 'mask=ANYINTERACT') = 'TRUE'");
 
-        scopeValues = query.SecurityScope.FilterValues ?? [];
-        if (scopeValues.Length > 0 && !string.IsNullOrWhiteSpace(layer.Security?.ScopeColumn))
+        var predicate = VariantFilterSql.Build(query.Variant.Filter, QuoteIdentifier, i => $":v{i}", out filterValues);
+        if (predicate is not null)
         {
-            sql.Append($" AND {QuoteIdentifier(layer.Security.ScopeColumn)} IN (");
-            sql.Append(string.Join(", ", scopeValues.Select((_, index) => $":scope{index}")));
-            sql.Append(')');
+            sql.Append(" AND ");
+            sql.Append(predicate);
         }
 
         return sql.ToString();

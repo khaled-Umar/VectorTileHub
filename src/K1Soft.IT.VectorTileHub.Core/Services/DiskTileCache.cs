@@ -15,10 +15,17 @@ public sealed class DiskTileCache : IVectorTileCache
         _logger = logger;
     }
 
-    public async Task<byte[]?> GetAsync(VectorTileCacheKey key, CancellationToken cancellationToken)
+    public async Task<CachedTile?> GetAsync(VectorTileCacheKey key, CancellationToken cancellationToken)
     {
         var path = key.ToDiskPath(_options.DefaultCacheRootFolder);
-        return File.Exists(path) ? await File.ReadAllBytesAsync(path, cancellationToken) : null;
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        var bytes = await File.ReadAllBytesAsync(path, cancellationToken);
+        var writtenAt = new DateTimeOffset(File.GetLastWriteTimeUtc(path), TimeSpan.Zero);
+        return new CachedTile(bytes, writtenAt);
     }
 
     public async Task SetAsync(VectorTileCacheKey key, byte[] tileBytes, VectorTileCacheOptions options, CancellationToken cancellationToken)
@@ -53,11 +60,11 @@ public sealed class DiskTileCache : IVectorTileCache
         return Task.CompletedTask;
     }
 
-    public async Task RemoveByEnvelopeAsync(int layerId, Envelope boundingBox, int minZoom, int maxZoom, string? scopeKey, string cacheVersion, CancellationToken cancellationToken)
+    public async Task RemoveByEnvelopeAsync(int layerId, Envelope boundingBox, int minZoom, int maxZoom, string? variantKey, string cacheVersion, CancellationToken cancellationToken)
     {
         foreach (var (z, x, y) in TileCoordinateUtils.GetAffectedTilesForZoomRange(boundingBox, minZoom, maxZoom))
         {
-            var key = new VectorTileCacheKey(layerId, z, x, y, scopeKey ?? "public", cacheVersion);
+            var key = new VectorTileCacheKey(layerId, z, x, y, variantKey ?? VectorTileVariant.DefaultKey, cacheVersion);
             await RemoveAsync(key, cancellationToken);
         }
     }

@@ -1,8 +1,4 @@
 using Hangfire;
-using Hangfire.Dashboard;
-using Hangfire.InMemory;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,36 +14,10 @@ public static class JobsServiceCollectionExtensions
         services.AddTransient<CacheDeletionJob>();
         services.AddTransient<CacheInvalidationJob>();
         services.AddTransient<CacheSwapJob>();
+        services.AddTransient<CacheTileRefreshJob>();
+
+        // Lets the Core orchestrator enqueue stale-tile refreshes without a Hangfire dependency.
+        services.AddSingleton<ITileRefreshQueue, HangfireTileRefreshQueue>();
         return services;
-    }
-
-    public static IApplicationBuilder UseVectorTileHubHangfireDashboard(this IApplicationBuilder app)
-    {
-        var options = app.ApplicationServices.GetRequiredService<IOptions<VectorTileHubOptions>>().Value;
-        if (!options.Hangfire.Enabled)
-        {
-            return app;
-        }
-
-        return app.UseHangfireDashboard(options.Hangfire.DashboardPath, new DashboardOptions
-        {
-            Authorization = [new RoleDashboardAuthorizationFilter(options.Hangfire.RequiredRoles)]
-        });
-    }
-
-    private sealed class RoleDashboardAuthorizationFilter : IDashboardAuthorizationFilter
-    {
-        private readonly string[] _roles;
-
-        public RoleDashboardAuthorizationFilter(string[] roles)
-        {
-            _roles = roles;
-        }
-
-        public bool Authorize(DashboardContext context)
-        {
-            var user = context.GetHttpContext().User;
-            return user.Identity?.IsAuthenticated == true && (_roles.Length == 0 || _roles.Any(user.IsInRole));
-        }
     }
 }

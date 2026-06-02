@@ -33,10 +33,11 @@
 
       <section class="legend">
         <span class="legend-swatch"></span>
-        <span>Parcel polygons use amber fill and dark cadastral boundaries.</span>
+        <span>Rendered with a style generated from <code>tmp/layerStyle.sld</code> (Type_t land-use symbology).</span>
       </section>
 
       <nav class="links">
+        <a href="/swagger">Swagger API docs</a>
         <a href="/vector-tile-hub/layers">Layer metadata</a>
         <a href="/vector-tile-hub/health">Health</a>
         <a href="/vector-tile-hub/jobs">Jobs</a>
@@ -49,7 +50,9 @@
     </section>
   </main>
 
+  <!-- OpenLayers + ol-mapbox-style: renders the served PBF tiles using the SLD-derived GL style. -->
   <script src="https://cdn.jsdelivr.net/npm/ol@10.2.1/dist/ol.js"></script>
-  <script src="/map.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ol-mapbox-style@12.3.1/dist/olms.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>

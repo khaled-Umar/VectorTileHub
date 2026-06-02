@@ -10,7 +10,7 @@ public static class VectorTileHubCoreServiceCollectionExtensions
         services.Configure<VectorTileHubOptions>(configuration.GetSection("VectorTileHub"));
         services.AddSingleton<IVectorTileLayerConfigProvider, JsonLayerConfigProvider>();
         services.AddSingleton<IVectorTileEncoder, MapboxVectorTileEncoder>();
-        services.AddScoped<IVectorTileSecurityScopeResolver, DefaultSecurityScopeResolver>();
+        services.AddSingleton<IVectorTileVariantResolver, DefaultVariantResolver>();
         services.AddScoped<IVectorTileService, VectorTileOrchestrator>();
         return services;
     }

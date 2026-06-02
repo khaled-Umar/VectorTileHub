@@ -22,19 +22,29 @@
   },
   "attributes": {
     "include": [
+      "Type_t",
       "LayerId",
       "DISTRICT",
       "SUBMUNICIPALITY",
       "SUBDISTRICT_NAME",
       "PARCELNUMBER",
+      "SERVICE_NAME",
       "PARCEL_LANDUSE",
       "LAND_USES",
       "PLAN_NUMBER",
       "BlockNumber"
     ]
   },
+  "cacheRules": [
+    { "variantKey": "default", "isDefault": true },
+    {
+      "variantKey": "residential",
+      "displayName": "Residential land uses only",
+      "filter": { "column": "Type_t", "operator": "In", "values": [ "Villa", "Admin.Tourist Housing" ] }
+    }
+  ],
   "cache": {
     "enabled": true,
-    "ttlMinutes": 0
+    "refreshPeriodMinutes": 1440
   }
 }

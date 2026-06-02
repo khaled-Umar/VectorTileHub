@@ -1,7 +1,6 @@
 using Hangfire;
 using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -21,7 +20,14 @@ public static class VectorTileHubEndpointRouteBuilderExtensions
         return endpoints;
     }
 
-    public static IApplicationBuilder UseVectorTileHubHangfireDashboard(this IApplicationBuilder app)
+    /// <summary>
+    /// Mounts the Hangfire dashboard. The library enforces NO built-in access policy —
+    /// the host supplies its own authorization filters (none = Hangfire's default,
+    /// which permits local requests only).
+    /// </summary>
+    public static IApplicationBuilder UseVectorTileHubHangfireDashboard(
+        this IApplicationBuilder app,
+        params IDashboardAuthorizationFilter[] authorizationFilters)
     {
         var options = app.ApplicationServices.GetRequiredService<IOptions<VectorTileHubOptions>>().Value;
         if (!options.Hangfire.Enabled)
@@ -29,25 +35,12 @@ public static class VectorTileHubEndpointRouteBuilderExtensions
             return app;
         }
 
-        return app.UseHangfireDashboard(options.Hangfire.DashboardPath, new DashboardOptions
+        var dashboardOptions = new DashboardOptions();
+        if (authorizationFilters is { Length: > 0 })
         {
-            Authorization = [new RoleDashboardAuthorizationFilter(options.Hangfire.RequiredRoles)]
-        });
-    }
-
-    private sealed class RoleDashboardAuthorizationFilter : IDashboardAuthorizationFilter
-    {
-        private readonly string[] _roles;
-
-        public RoleDashboardAuthorizationFilter(string[] roles)
-        {
-            _roles = roles;
+            dashboardOptions.Authorization = authorizationFilters;
         }
 
-        public bool Authorize(DashboardContext context)
-        {
-            var user = context.GetHttpContext().User;
-            return user.Identity?.IsAuthenticated == true && (_roles.Length == 0 || _roles.Any(user.IsInRole));
-        }
+        return app.UseHangfireDashboard(options.Hangfire.DashboardPath, dashboardOptions);
     }
 }

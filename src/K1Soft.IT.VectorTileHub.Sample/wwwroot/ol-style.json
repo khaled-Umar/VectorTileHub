@@ -1,0 +1,1511 @@
+{
+  "version": 8,
+  "name": "VectorTileHub SLD-derived style",
+  "sources": {
+    "vth": {
+      "type": "vector",
+      "tiles": [
+        "/vector-tile-hub/tiles/82/{z}/{x}/{y}.pbf"
+      ],
+      "minzoom": 12,
+      "maxzoom": 21
+    }
+  },
+  "layers": [
+    {
+      "id": "rule-1-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ffff00"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Villa"
+      ]
+    },
+    {
+      "id": "rule-1-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#9c9c9c",
+        "line-width": 0.05
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Villa"
+      ]
+    },
+    {
+      "id": "rule-2-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ff7c80"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Admin.Tourist Housing"
+      ]
+    },
+    {
+      "id": "rule-2-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Admin.Tourist Housing"
+      ]
+    },
+    {
+      "id": "rule-3-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#e60000"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Comm.Not Service center"
+      ]
+    },
+    {
+      "id": "rule-3-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Comm.Not Service center"
+      ]
+    },
+    {
+      "id": "rule-4-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#004da8"
+      },
+      "filter": [
+        "in",
+        [
+          "get",
+          "Type_t"
+        ],
+        [
+          "literal",
+          [
+            "invest",
+            "Amanah inves"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "rule-4-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "in",
+        [
+          "get",
+          "Type_t"
+        ],
+        [
+          "literal",
+          [
+            "invest",
+            "Amanah inves"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "rule-5-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ff0000"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "\u062A \u062D 1"
+      ]
+    },
+    {
+      "id": "rule-5-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "\u062A \u062D 1"
+      ]
+    },
+    {
+      "id": "rule-6-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#b05800"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "\u062A \u062D 2"
+      ]
+    },
+    {
+      "id": "rule-6-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "\u062A \u062D 2"
+      ]
+    },
+    {
+      "id": "rule-7-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#804000"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "\u062A \u0631 1"
+      ]
+    },
+    {
+      "id": "rule-7-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "\u062A \u0631 1"
+      ]
+    },
+    {
+      "id": "rule-8-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ff7f00"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "\u062A \u0631"
+      ]
+    },
+    {
+      "id": "rule-8-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "\u062A \u0631"
+      ]
+    },
+    {
+      "id": "rule-9-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#737300"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Service Housing"
+      ]
+    },
+    {
+      "id": "rule-9-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#000000",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Service Housing"
+      ]
+    },
+    {
+      "id": "rule-10-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#c0c000"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Vhouse"
+      ]
+    },
+    {
+      "id": "rule-10-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#828282",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Vhouse"
+      ]
+    },
+    {
+      "id": "rule-11-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#f0b300"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "amaer"
+      ]
+    },
+    {
+      "id": "rule-11-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#828282",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "amaer"
+      ]
+    },
+    {
+      "id": "rule-12-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ced9a1"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "SeaZone"
+      ]
+    },
+    {
+      "id": "rule-12-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "SeaZone"
+      ]
+    },
+    {
+      "id": "rule-13-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ffecb1"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Space"
+      ]
+    },
+    {
+      "id": "rule-13-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Space"
+      ]
+    },
+    {
+      "id": "rule-14-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ffcfff"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "wearhouse"
+      ]
+    },
+    {
+      "id": "rule-14-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "wearhouse"
+      ]
+    },
+    {
+      "id": "rule-15-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#c890ff"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "CityInd"
+      ]
+    },
+    {
+      "id": "rule-15-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "CityInd"
+      ]
+    },
+    {
+      "id": "rule-16-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#7f00ff"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "heavy"
+      ]
+    },
+    {
+      "id": "rule-16-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "heavy"
+      ]
+    },
+    {
+      "id": "rule-17-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ffd1a0"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Sp_Dv"
+      ]
+    },
+    {
+      "id": "rule-17-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Sp_Dv"
+      ]
+    },
+    {
+      "id": "rule-18-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ff4340"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "City_Center"
+      ]
+    },
+    {
+      "id": "rule-18-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "City_Center"
+      ]
+    },
+    {
+      "id": "rule-19-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ff7c80"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "MIX"
+      ]
+    },
+    {
+      "id": "rule-19-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "MIX"
+      ]
+    },
+    {
+      "id": "rule-20-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#700000"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "CarShow"
+      ]
+    },
+    {
+      "id": "rule-20-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "CarShow"
+      ]
+    },
+    {
+      "id": "rule-21-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#c00000"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "comm"
+      ]
+    },
+    {
+      "id": "rule-21-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "comm"
+      ]
+    },
+    {
+      "id": "rule-22-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#808080"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "mosq"
+      ]
+    },
+    {
+      "id": "rule-22-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "mosq"
+      ]
+    },
+    {
+      "id": "rule-23-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#81abff"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Edu"
+      ]
+    },
+    {
+      "id": "rule-23-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Edu"
+      ]
+    },
+    {
+      "id": "rule-24-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#636bce"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Gov"
+      ]
+    },
+    {
+      "id": "rule-24-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Gov"
+      ]
+    },
+    {
+      "id": "rule-25-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#a1ffff"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "helth"
+      ]
+    },
+    {
+      "id": "rule-25-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "helth"
+      ]
+    },
+    {
+      "id": "rule-26-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#c0c0c0"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Regional"
+      ]
+    },
+    {
+      "id": "rule-26-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Regional"
+      ]
+    },
+    {
+      "id": "rule-27-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#60a001"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Garden"
+      ]
+    },
+    {
+      "id": "rule-27-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Garden"
+      ]
+    },
+    {
+      "id": "rule-28-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#b4ff40"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Island"
+      ]
+    },
+    {
+      "id": "rule-28-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Island"
+      ]
+    },
+    {
+      "id": "rule-29-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#6c815a"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Parking"
+      ]
+    },
+    {
+      "id": "rule-29-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Parking"
+      ]
+    },
+    {
+      "id": "rule-30-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#bee8ff"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Lake"
+      ]
+    },
+    {
+      "id": "rule-30-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Lake"
+      ]
+    },
+    {
+      "id": "rule-31-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#ffffb1"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "KH3"
+      ]
+    },
+    {
+      "id": "rule-31-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "KH3"
+      ]
+    },
+    {
+      "id": "rule-32-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#b05800"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "BN"
+      ]
+    },
+    {
+      "id": "rule-32-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "BN"
+      ]
+    },
+    {
+      "id": "rule-33-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#c37372"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "BZ1"
+      ]
+    },
+    {
+      "id": "rule-33-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "BZ1"
+      ]
+    },
+    {
+      "id": "rule-34-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#f79474"
+      },
+      "filter": [
+        "in",
+        [
+          "get",
+          "Type_t"
+        ],
+        [
+          "literal",
+          [
+            "BZ2",
+            "Historical"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "rule-34-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "in",
+        [
+          "get",
+          "Type_t"
+        ],
+        [
+          "literal",
+          [
+            "BZ2",
+            "Historical"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "rule-35-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#e8d5b0"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "BZ3"
+      ]
+    },
+    {
+      "id": "rule-35-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "BZ3"
+      ]
+    },
+    {
+      "id": "rule-36-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#f4e36f"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "BZ4"
+      ]
+    },
+    {
+      "id": "rule-36-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "BZ4"
+      ]
+    },
+    {
+      "id": "rule-37-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#e1e1e1"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Walk"
+      ]
+    },
+    {
+      "id": "rule-37-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#828282",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "Walk"
+      ]
+    },
+    {
+      "id": "rule-38-fill",
+      "type": "fill",
+      "source": "vth",
+      "source-layer": "parcels",
+      "paint": {
+        "fill-color": "#c09000"
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "slum"
+      ]
+    },
+    {
+      "id": "rule-38-line",
+      "type": "line",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "line-join": "bevel"
+      },
+      "paint": {
+        "line-color": "#6e6e6e",
+        "line-width": 0.4
+      },
+      "filter": [
+        "==",
+        [
+          "get",
+          "Type_t"
+        ],
+        "slum"
+      ]
+    },
+    {
+      "id": "rule-39-label",
+      "type": "symbol",
+      "source": "vth",
+      "source-layer": "parcels",
+      "layout": {
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "PARCELNUMBER"
+          ],
+          [
+            "get",
+            "SERVICE_NAME"
+          ]
+        ],
+        "text-font": [
+          "Open Sans"
+        ],
+        "text-size": 13
+      },
+      "paint": {
+        "text-color": "#323232"
+      },
+      "minzoom": 17
+    }
+  ]
+}

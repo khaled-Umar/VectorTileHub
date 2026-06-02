@@ -5,10 +5,12 @@ namespace K1Soft.IT.VectorTileHub.Storage;
 public sealed class EfRuntimeSettingsStore : IVectorTileRuntimeSettingsStore
 {
     private readonly VectorTileHubDbContext _dbContext;
+    private readonly ServerSettingsMirror _mirror;
 
-    public EfRuntimeSettingsStore(VectorTileHubDbContext dbContext)
+    public EfRuntimeSettingsStore(VectorTileHubDbContext dbContext, ServerSettingsMirror mirror)
     {
         _dbContext = dbContext;
+        _mirror = mirror;
     }
 
     public async Task<VectorTileLayerRuntimeSettings?> GetLayerRuntimeSettingsAsync(int layerId, CancellationToken cancellationToken)
@@ -42,6 +44,25 @@ public sealed class EfRuntimeSettingsStore : IVectorTileRuntimeSettingsStore
     {
         var entities = await _dbContext.LayerRuntimeSettings.AsNoTracking().ToListAsync(cancellationToken);
         return entities.Select(ToModel).ToArray();
+    }
+
+    // Global key/value settings — read from the in-memory mirror (fast), write-through to DB.
+    public string? GetSetting(string key) => _mirror.Get(key);
+
+    public async Task SetSettingAsync(string key, string value, CancellationToken cancellationToken)
+    {
+        var entity = await _dbContext.ServerSettings.FirstOrDefaultAsync(x => x.Key == key, cancellationToken);
+        if (entity is null)
+        {
+            entity = new ServerSettingEntity { Key = key };
+            _dbContext.ServerSettings.Add(entity);
+        }
+
+        entity.Value = value;
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _mirror.Set(key, value);
     }
 
     private static VectorTileLayerRuntimeSettings ToModel(LayerRuntimeSettingsEntity entity)

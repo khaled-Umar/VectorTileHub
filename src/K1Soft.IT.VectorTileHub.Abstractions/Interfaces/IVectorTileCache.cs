@@ -4,7 +4,7 @@ namespace K1Soft.IT.VectorTileHub;
 
 public interface IVectorTileCache
 {
-    Task<byte[]?> GetAsync(
+    Task<CachedTile?> GetAsync(
         VectorTileCacheKey key,
         CancellationToken cancellationToken);
 
@@ -23,7 +23,7 @@ public interface IVectorTileCache
         Envelope boundingBox,
         int minZoom,
         int maxZoom,
-        string? scopeKey,
+        string? variantKey,
         string cacheVersion,
         CancellationToken cancellationToken);
 }

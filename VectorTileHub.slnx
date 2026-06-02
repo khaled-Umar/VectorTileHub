@@ -1,0 +1,20 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/K1Soft.IT.VectorTileHub.Abstractions/K1Soft.IT.VectorTileHub.Abstractions.csproj" />
+    <Project Path="src/K1Soft.IT.VectorTileHub.AspNetCore/K1Soft.IT.VectorTileHub.AspNetCore.csproj" />
+    <Project Path="src/K1Soft.IT.VectorTileHub.Core/K1Soft.IT.VectorTileHub.Core.csproj" />
+    <Project Path="src/K1Soft.IT.VectorTileHub.Jobs/K1Soft.IT.VectorTileHub.Jobs.csproj" />
+    <Project Path="src/K1Soft.IT.VectorTileHub.Providers.Oracle/K1Soft.IT.VectorTileHub.Providers.Oracle.csproj" />
+    <Project Path="src/K1Soft.IT.VectorTileHub.Providers.SqlServer/K1Soft.IT.VectorTileHub.Providers.SqlServer.csproj" />
+    <Project Path="src/K1Soft.IT.VectorTileHub.Sample/K1Soft.IT.VectorTileHub.Sample.csproj" />
+    <Project Path="src/K1Soft.IT.VectorTileHub.Storage/K1Soft.IT.VectorTileHub.Storage.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/K1Soft.IT.VectorTileHub.Core.Tests/K1Soft.IT.VectorTileHub.Core.Tests.csproj" />
+  </Folder>
+</Solution>
