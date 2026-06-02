@@ -12,10 +12,7 @@ public static class VectorTileHubEndpointRouteBuilderExtensions
     public static IEndpointRouteBuilder MapVectorTileHubEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var options = endpoints.ServiceProvider.GetRequiredService<IOptions<VectorTileHubOptions>>().Value;
-        endpoints.MapTileEndpoints(options);
-        endpoints.MapLayerMetadataEndpoints(options);
-        endpoints.MapAdminCacheEndpoints(options);
-        endpoints.MapAdminConfigEndpoints(options);
+        endpoints.MapControllers();
         endpoints.MapHealthChecks(options.HealthCheckPath);
         return endpoints;
     }

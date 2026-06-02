@@ -1,3 +1,4 @@
+using K1Soft.IT.VectorTileHub.AspNetCore.Controllers;
 using K1Soft.IT.VectorTileHub.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,14 @@ public static class VectorTileHubServiceCollectionExtensions
             options.UseDiskCache ? sp.GetService<DiskTileCache>() : null));
 
         services.AddHealthChecks().AddCheck<VectorTileHubHealthCheck>("VectorTileHub");
+
+        // The library ships MVC controllers (not minimal-API endpoints). Register the
+        // controllers application part and the convention that prepends the configured
+        // route prefix to them.
+        services.AddControllers()
+            .AddApplicationPart(typeof(VectorTileController).Assembly)
+            .AddMvcOptions(mvc => mvc.Conventions.Add(new VectorTileHubRouteConvention(options.RoutePrefix)));
+
         return services;
     }
 }
