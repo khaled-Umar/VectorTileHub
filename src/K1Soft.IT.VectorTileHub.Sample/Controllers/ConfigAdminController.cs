@@ -1,21 +1,25 @@
-using Microsoft.AspNetCore.Http;
+using K1Soft.IT.VectorTileHub;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace K1Soft.IT.VectorTileHub.AspNetCore.Controllers;
+namespace K1Soft.IT.VectorTileHub.Sample.Controllers;
 
-// NOTE: No built-in authorization — the host secures this endpoint.
+// Host-owned config-reload endpoint. Reloads the layer JSON files from disk via the library's
+// IVectorTileLayerConfigProvider. Gated by the host's own policy.
 [ApiController]
+[Route("vector-tile-hub/admin/config")]
 [Tags("Admin Config")]
-public sealed class AdminConfigController : ControllerBase
+[Authorize(Roles = "GISAdmin")]
+public sealed class ConfigAdminController : ControllerBase
 {
     private readonly IVectorTileLayerConfigProvider _provider;
 
-    public AdminConfigController(IVectorTileLayerConfigProvider provider)
+    public ConfigAdminController(IVectorTileLayerConfigProvider provider)
     {
         _provider = provider;
     }
 
-    [HttpPost("admin/config/reload")]
+    [HttpPost("reload")]
     public async Task<IActionResult> Reload(CancellationToken cancellationToken)
     {
         await _provider.ReloadAsync(cancellationToken);

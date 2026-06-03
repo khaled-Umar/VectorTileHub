@@ -2,6 +2,7 @@ using K1Soft.IT.VectorTileHub;
 using K1Soft.IT.VectorTileHub.AspNetCore;
 using K1Soft.IT.VectorTileHub.Jobs;
 using K1Soft.IT.VectorTileHub.Providers.SqlServer;
+using K1Soft.IT.VectorTileHub.Sample;
 using K1Soft.IT.VectorTileHub.Sample.Tools;
 using K1Soft.IT.VectorTileHub.Storage;
 using Microsoft.AspNetCore.DataProtection;
@@ -41,8 +42,9 @@ builder.Services.AddDataProtection()
 builder.Services.AddAuthentication("Demo").AddScheme<DemoAuthenticationOptions, DemoAuthenticationHandler>("Demo", _ => { });
 builder.Services.AddAuthorization();
 
-// AddVectorTileHub() calls AddControllers(), which registers the API explorer
-// that SwaggerGen consumes — no AddEndpointsApiExplorer (minimal-API) needed.
+// The host owns MVC now — the library exposes no controllers. AddControllers() registers this
+// host's controllers (the tile/layer/admin exposers) and the API explorer that SwaggerGen consumes.
+builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 
 // One facade call wires the whole server stack (core + storage + jobs); the database
@@ -61,10 +63,12 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
-// One pipeline call maps the VectorTileHub endpoints (library controllers + this host's own,
-// e.g. SampleExtentController) and mounts the Hangfire dashboard. The host supplies any
-// dashboard authorization; none here = Hangfire's local-only default.
-app.MapVectorTileHubServer();
+// The host owns the HTTP surface. Map this host's controllers (TilesController, LayersController,
+// CacheAdminController, ConfigAdminController, SampleExtentController), the health check, and the
+// Hangfire dashboard — the dashboard secured by the host's own authorization filter.
+app.MapControllers();
+app.MapHealthChecks("/vector-tile-hub/health");
+app.UseVectorTileHubHangfireDashboard(new SampleDashboardAuthorizationFilter());
 
 app.Run();
 

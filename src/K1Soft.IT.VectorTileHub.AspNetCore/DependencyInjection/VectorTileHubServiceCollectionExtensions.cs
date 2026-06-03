@@ -1,4 +1,3 @@
-using K1Soft.IT.VectorTileHub.AspNetCore.Controllers;
 using K1Soft.IT.VectorTileHub.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,13 +30,9 @@ public static class VectorTileHubServiceCollectionExtensions
 
         services.AddHealthChecks().AddCheck<VectorTileHubHealthCheck>("VectorTileHub");
 
-        // The library ships MVC controllers (not minimal-API endpoints). Register the
-        // controllers application part and the convention that prepends the configured
-        // route prefix to them.
-        services.AddControllers()
-            .AddApplicationPart(typeof(VectorTileController).Assembly)
-            .AddMvcOptions(mvc => mvc.Conventions.Add(new VectorTileHubRouteConvention(options.RoutePrefix)));
-
+        // NOTE: the library exposes NO HTTP endpoints. It registers services only; the host owns
+        // the HTTP surface (controllers / minimal APIs) and secures it, calling IVectorTileService,
+        // IVectorTileLayerConfigProvider and IVectorTileCacheAdmin from its own routes.
         return services;
     }
 }

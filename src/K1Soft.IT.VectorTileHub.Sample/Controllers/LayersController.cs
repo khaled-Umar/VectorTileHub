@@ -1,20 +1,23 @@
-using Microsoft.AspNetCore.Http;
+using K1Soft.IT.VectorTileHub;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
-namespace K1Soft.IT.VectorTileHub.AspNetCore.Controllers;
+namespace K1Soft.IT.VectorTileHub.Sample.Controllers;
 
+// Host-owned layer-metadata endpoints. Calls the library's IVectorTileLayerConfigProvider and shapes
+// the DTO the frontend expects. The tile URL template points at THIS host's tile route.
 [ApiController]
+[Route("vector-tile-hub")]
 [Tags("Layers")]
-public sealed class LayerMetadataController : ControllerBase
+public sealed class LayersController : ControllerBase
 {
-    private readonly IVectorTileLayerConfigProvider _provider;
-    private readonly VectorTileHubOptions _options;
+    // Matches TilesController's route; the frontend builds tile requests from this template.
+    private const string TileRouteBase = "/vector-tile-hub";
 
-    public LayerMetadataController(IVectorTileLayerConfigProvider provider, IOptions<VectorTileHubOptions> options)
+    private readonly IVectorTileLayerConfigProvider _provider;
+
+    public LayersController(IVectorTileLayerConfigProvider provider)
     {
         _provider = provider;
-        _options = options.Value;
     }
 
     [HttpGet("layers")]
@@ -22,7 +25,7 @@ public sealed class LayerMetadataController : ControllerBase
     {
         var layers = _provider.GetAllLayers()
             .Where(x => x.Enabled)
-            .Select(x => ToDto(x, _options.RoutePrefix))
+            .Select(ToDto)
             .ToArray();
 
         return Ok(new { layers });
@@ -34,10 +37,10 @@ public sealed class LayerMetadataController : ControllerBase
         var layer = _provider.GetLayer(layerId);
         return layer is null || !layer.Enabled
             ? NotFound(new { error = "Layer not found" })
-            : Ok(ToDto(layer, _options.RoutePrefix));
+            : Ok(ToDto(layer));
     }
 
-    private static LayerMetadataDto ToDto(VectorTileLayerConfig layer, string routePrefix)
+    private static LayerMetadataDto ToDto(VectorTileLayerConfig layer)
     {
         var variants = layer.CacheRules.Count > 0
             ? layer.CacheRules.Select(r => r.VariantKey).ToArray()
@@ -49,7 +52,7 @@ public sealed class LayerMetadataController : ControllerBase
             layer.LayerName,
             layer.Tile.MinZoom,
             layer.Tile.MaxZoom,
-            $"{routePrefix}/tiles/{layer.Id}/{{z}}/{{x}}/{{y}}.pbf",
+            $"{TileRouteBase}/tiles/{layer.Id}/{{z}}/{{x}}/{{y}}.pbf",
             variants,
             layer.Attributes.Include);
     }

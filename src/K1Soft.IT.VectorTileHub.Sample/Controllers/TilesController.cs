@@ -1,15 +1,20 @@
+using K1Soft.IT.VectorTileHub;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace K1Soft.IT.VectorTileHub.AspNetCore.Controllers;
+namespace K1Soft.IT.VectorTileHub.Sample.Controllers;
 
+// Host-owned tile endpoint. The library ships no controllers — this host exposes the route it wants
+// and calls the library's IVectorTileService. Left anonymous (public read); see the variant note below
+// for where a host would gate access or map a user role to a cache variant.
 [ApiController]
+[Route("vector-tile-hub")]
 [Tags("Tiles")]
-public sealed class VectorTileController : ControllerBase
+public sealed class TilesController : ControllerBase
 {
     private readonly IVectorTileService _tileService;
 
-    public VectorTileController(IVectorTileService tileService)
+    public TilesController(IVectorTileService tileService)
     {
         _tileService = tileService;
     }
@@ -23,6 +28,9 @@ public sealed class VectorTileController : ControllerBase
         [FromQuery] string? variant,
         CancellationToken cancellationToken)
     {
+        // The host decides the variant. Here we honour an explicit ?variant= query, but a real host
+        // could instead derive it from the caller's identity, e.g.:
+        //   variant = User.IsInRole("Resident") ? "residential" : null;
         var result = await _tileService.GetTileAsync(layerId, z, x, y, variant, cancellationToken);
 
         if (result.Status == VectorTileResultStatus.Ok)

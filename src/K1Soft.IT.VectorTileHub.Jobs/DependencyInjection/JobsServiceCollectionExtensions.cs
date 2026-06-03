@@ -20,6 +20,10 @@ public static class JobsServiceCollectionExtensions
 
         // Lets the Core orchestrator enqueue stale-tile refreshes without a Hangfire dependency.
         services.AddSingleton<ITileRefreshQueue, HangfireTileRefreshQueue>();
+
+        // Cache administration surfaced as a service so hosts can expose it from their own
+        // (authorized) controllers — the library ships no admin endpoints.
+        services.AddScoped<IVectorTileCacheAdmin, HangfireVectorTileCacheAdmin>();
         return services;
     }
 }
