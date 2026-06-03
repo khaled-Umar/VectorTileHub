@@ -15,14 +15,20 @@ K1Soft.IT.VectorTileHub
 - `K1Soft.IT.VectorTileHub.AspNetCore`: endpoint and host integration.
 - `K1Soft.IT.VectorTileHub.Providers.SqlServer`: SQL Server spatial provider.
 - `K1Soft.IT.VectorTileHub.Providers.Oracle`: Oracle spatial provider.
+- `K1Soft.IT.VectorTileHub.Providers.Postgis`: PostgreSQL/PostGIS spatial provider.
 - `K1Soft.IT.VectorTileHub.Storage`: SQLite runtime settings store.
-- `K1Soft.IT.VectorTileHub.Jobs`: Hangfire cache jobs.
+- `K1Soft.IT.VectorTileHub.Jobs`: Hangfire cache jobs + cache-admin service.
+- `K1Soft.IT.VectorTileHub.Server`: provider-agnostic facade — one reference registers the whole stack.
 - `K1Soft.IT.VectorTileHub.Sample`: sample ASP.NET Core host with a map viewer.
+
+> **Architecture note:** the library exposes **no HTTP endpoints** — it registers services
+> (`IVectorTileService`, `IVectorTileLayerConfigProvider`, `IVectorTileCacheAdmin`) that the host
+> calls from its own controllers. See the [Developer Tutorial](docs/developer-tutorial.md).
 
 ## Quick Start
 
 ```powershell
-dotnet build VectorTileHub.sln
+dotnet build VectorTileHub.slnx
 dotnet run --project src/K1Soft.IT.VectorTileHub.Sample/K1Soft.IT.VectorTileHub.Sample.csproj
 ```
 
@@ -56,6 +62,7 @@ Only a curated set of attributes is emitted in tiles.
 
 ## Documentation
 
+- **[Developer Tutorial](docs/developer-tutorial.md)** — full end-to-end guide (start here)
 - [Architecture](docs/architecture.md)
 - [Configuration](docs/configuration.md)
 - [Sample Map](docs/sample-map.md)

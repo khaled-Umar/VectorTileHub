@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VectorTileHub — Developer Guide</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --surface:#ffffff; --text:#1c2430; --muted:#5b6675; --border:#e3e7ee;
+    --accent:#2563eb; --accent-soft:#e8f0fe; --sidebar:#0f172a; --sidebar-text:#cbd5e1;
+    --sidebar-active:#3b82f6; --code-bg:#0f1729; --code-text:#e6edf3; --code-border:#1e293b;
+    --note:#2563eb; --warn:#d97706; --tip:#059669;
+    --shadow:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.04);
+  }
+  html[data-theme="dark"]{
+    --bg:#0b1220; --surface:#121a2a; --text:#e6edf3; --muted:#9aa7b8; --border:#243044;
+    --accent:#60a5fa; --accent-soft:#16233b; --sidebar:#070c16; --sidebar-text:#aeb9c9;
+    --code-bg:#070c16; --code-text:#e6edf3; --code-border:#1b2740;
+    --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* Header */
+  header{
+    position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;
+    height:60px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+  .brand .logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#2563eb,#06b6d4);
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:15px}
+  .badge{font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);
+    padding:3px 9px;border-radius:999px;border:1px solid var(--border)}
+  header .spacer{flex:1}
+  .iconbtn{border:1px solid var(--border);background:var(--surface);color:var(--text);
+    border-radius:8px;height:36px;min-width:36px;padding:0 10px;cursor:pointer;font-size:14px}
+  .iconbtn:hover{border-color:var(--accent)}
+  #menuToggle{display:none}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:280px 1fr;max-width:1400px;margin:0 auto}
+  nav.side{
+    position:sticky;top:60px;align-self:start;height:calc(100vh - 60px);overflow-y:auto;
+    background:var(--sidebar);padding:22px 14px;
+  }
+  nav.side .group{color:#64748b;font-size:11px;font-weight:700;letter-spacing:.08em;
+    text-transform:uppercase;margin:18px 12px 6px}
+  nav.side a{display:block;color:var(--sidebar-text);padding:7px 12px;border-radius:8px;
+    font-size:14.5px;border-left:3px solid transparent}
+  nav.side a:hover{background:rgba(255,255,255,.06);text-decoration:none}
+  nav.side a.active{color:#fff;background:rgba(59,130,246,.18);border-left-color:var(--sidebar-active)}
+
+  main{padding:36px 48px 120px;min-width:0}
+  .hero{margin-bottom:14px}
+  .hero h1{font-size:34px;margin:0 0 8px;letter-spacing:-.02em}
+  .hero p.lead{font-size:18px;color:var(--muted);margin:0 0 10px;max-width:760px}
+
+  section{padding-top:26px;margin-top:14px;border-top:1px solid var(--border)}
+  section:first-of-type{border-top:0}
+  h2{font-size:25px;margin:8px 0 12px;letter-spacing:-.01em;scroll-margin-top:74px}
+  h3{font-size:18px;margin:22px 0 8px}
+  p,li{color:var(--text)}
+  ul,ol{padding-left:22px}
+  li{margin:4px 0}
+  .muted{color:var(--muted)}
+
+  /* Cards / steps */
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:14px 0}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+  .card h4{margin:0 0 6px;font-size:15px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .pill{display:inline-block;font-size:12px;font-weight:600;color:#fff;background:var(--accent);
+    padding:2px 8px;border-radius:6px;margin-right:6px}
+
+  /* Tables */
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px;background:var(--surface);
+    border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--accent-soft);font-weight:700;color:var(--text)}
+  tr:last-child td{border-bottom:0}
+  code.inl{background:var(--accent-soft);border:1px solid var(--border);border-radius:6px;
+    padding:1px 6px;font-family:"SF Mono",ui-monospace,Consolas,monospace;font-size:13.5px;color:var(--text)}
+
+  /* Code blocks */
+  pre{position:relative;background:var(--code-bg);color:var(--code-text);border:1px solid var(--code-border);
+    border-radius:12px;padding:38px 16px 16px;overflow:auto;margin:12px 0;font-size:13.5px;line-height:1.55}
+  pre code{font-family:"SF Mono",ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;white-space:pre}
+  pre[data-lang]::before{content:attr(data-lang);position:absolute;top:9px;left:14px;
+    font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7d8aa0}
+  pre .copy{position:absolute;top:7px;right:8px;background:#1e293b;color:#cbd5e1;border:1px solid #334155;
+    border-radius:7px;font-size:12px;padding:4px 10px;cursor:pointer}
+  pre .copy:hover{background:#334155;color:#fff}
+
+  /* Callouts */
+  .callout{display:flex;gap:10px;border-radius:10px;padding:12px 14px;margin:14px 0;border:1px solid var(--border);
+    background:var(--surface)}
+  .callout .ic{font-weight:800;flex:0 0 auto}
+  .callout.note{border-left:4px solid var(--note)} .callout.note .ic{color:var(--note)}
+  .callout.warn{border-left:4px solid var(--warn)} .callout.warn .ic{color:var(--warn)}
+  .callout.tip{border-left:4px solid var(--tip)}  .callout.tip .ic{color:var(--tip)}
+  .callout p{margin:0}
+
+  footer{color:var(--muted);font-size:13px;border-top:1px solid var(--border);padding:20px 48px;text-align:center}
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr}
+    nav.side{position:fixed;top:60px;left:0;width:280px;z-index:25;transform:translateX(-100%);transition:transform .2s}
+    body.nav-open nav.side{transform:translateX(0)}
+    #menuToggle{display:inline-block}
+    main{padding:24px 18px 100px}
+    footer{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="iconbtn" id="menuToggle" aria-label="Menu">☰</button>
+  <div class="brand"><span class="logo">▦</span> VectorTileHub</div>
+  <span class="badge">v1.0.0 · .NET 10</span>
+  <div class="spacer"></div>
+  <button class="iconbtn" id="themeToggle" title="Toggle theme">🌓 Theme</button>
+</header>
+
+<div class="layout">
+  <nav class="side">
+    <div class="group">Getting started</div>
+    <a href="#overview">Overview</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#install">Install (local NuGet feed)</a>
+    <div class="group">Configure</div>
+    <a href="#appsettings">appsettings.json</a>
+    <a href="#layer">Define a layer</a>
+    <a href="#program">Register services</a>
+    <div class="group">Expose &amp; secure</div>
+    <a href="#controllers">Your controllers</a>
+    <a href="#security">Security</a>
+    <a href="#run">Run &amp; verify</a>
+    <div class="group">Data &amp; cache</div>
+    <a href="#providers">Database providers</a>
+    <a href="#caching">Caching &amp; jobs</a>
+    <a href="#variants">Variants (filters)</a>
+    <a href="#zoom">Zoom &amp; over-zoom</a>
+    <div class="group">Client</div>
+    <a href="#frontend">Frontend (OpenLayers)</a>
+    <a href="#health">Health checks</a>
+    <div class="group">Reference</div>
+    <a href="#services">Service reference</a>
+    <a href="#options">Options reference</a>
+    <a href="#schema">Layer schema</a>
+    <a href="#trouble">Troubleshooting</a>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <h1>VectorTileHub — Developer Guide</h1>
+      <p class="lead">A reusable ASP.NET Core library for serving secure, cache-aware Mapbox Vector
+        Tiles (MVT/PBF) from spatial databases — SQL Server, Oracle, or PostGIS.</p>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="overview">
+      <h2>Overview</h2>
+      <p>VectorTileHub is a <strong>service library, not a framework</strong>. The single most
+        important idea:</p>
+      <div class="callout note"><span class="ic">i</span><p><strong>The library exposes no HTTP
+        endpoints.</strong> It registers injectable <em>services</em>; your app owns the HTTP surface —
+        you write the controllers, choose the routes, and apply your own authentication and
+        authorization.</p></div>
+      <p>You consume three services and decide what to surface:</p>
+      <div class="grid">
+        <div class="card"><h4>IVectorTileService</h4><p>Produces an MVT/PBF tile for
+          <code class="inl">(layerId, z, x, y, variant)</code>.</p></div>
+        <div class="card"><h4>IVectorTileLayerConfigProvider</h4><p>Reads layer metadata (zoom range,
+          extent, variants) and reloads config from disk.</p></div>
+        <div class="card"><h4>IVectorTileCacheAdmin</h4><p>Cache operations: generate, delete,
+          invalidate, notify-change, swap, status.</p></div>
+      </div>
+      <div class="callout tip"><span class="ic">✓</span><p><strong>Convention:</strong> endpoints are
+        MVC controllers (<code class="inl">[ApiController]</code> + <code class="inl">ControllerBase</code>),
+        mapped via <code class="inl">app.MapControllers()</code> — never minimal APIs.</p></div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture">
+      <h2>Architecture &amp; projects</h2>
+      <pre data-lang="text"><code>Your Host App  (you write controllers here)
+ ├─ K1Soft.IT.VectorTileHub.Server          ← facade: one call registers the whole stack
+ │    └─ AspNetCore ─ Core ─ Storage ─ Jobs ─ Abstractions   (all transitive)
+ └─ K1Soft.IT.VectorTileHub.Providers.&lt;Db&gt;  ← your chosen DB provider (pluggable)</code></pre>
+      <table>
+        <tr><th>Package</th><th>Responsibility</th></tr>
+        <tr><td><code class="inl">…Abstractions</code></td><td>Public contracts &amp; models.</td></tr>
+        <tr><td><code class="inl">…Core</code></td><td>Orchestration, tile math, MVT encoding, cache stack, JSON layer loading.</td></tr>
+        <tr><td><code class="inl">…Storage</code></td><td>SQLite runtime-settings store (cache versions, generation status).</td></tr>
+        <tr><td><code class="inl">…Jobs</code></td><td>Hangfire background jobs + <code class="inl">IVectorTileCacheAdmin</code>.</td></tr>
+        <tr><td><code class="inl">…AspNetCore</code></td><td>Host integration: DI composition, health check, dashboard middleware. <strong>Ships no controllers.</strong></td></tr>
+        <tr><td><code class="inl">…Server</code></td><td>Provider-agnostic facade — one reference, one setup call.</td></tr>
+        <tr><td><code class="inl">…Providers.SqlServer / .Oracle / .Postgis</code></td><td>Pluggable spatial providers.</td></tr>
+      </table>
+      <p class="muted">The model mirrors EF Core: reference the core (<code class="inl">.Server</code>)
+        plus a provider, like <code class="inl">EFCore</code> + <code class="inl">EFCore.SqlServer</code>.</p>
+    </section>
+
+    <!-- INSTALL -->
+    <section id="install">
+      <h2>Install (from your local NuGet feed)</h2>
+      <p>The packages are published to your local feed at
+        <code class="inl">F:\OneDrive\NUGetLocalPackages</code> (version <strong>1.0.0</strong>).
+        A host needs <strong>two packages</strong>: the facade plus one provider.</p>
+
+      <h3>1. Register the local feed</h3>
+      <p>Add a <code class="inl">nuget.config</code> next to your solution (or edit the global one):</p>
+      <pre data-lang="xml"><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;configuration&gt;
+  &lt;packageSources&gt;
+    &lt;add key="nuget.org" value="https://api.nuget.org/v3/index.json" /&gt;
+    &lt;add key="K1Soft.Local" value="F:\OneDrive\NUGetLocalPackages" /&gt;
+  &lt;/packageSources&gt;
+&lt;/configuration&gt;</code></pre>
+
+      <h3>2. Add the packages</h3>
+      <pre data-lang="powershell"><code>dotnet add package K1Soft.IT.VectorTileHub.Server --version 1.0.0
+dotnet add package K1Soft.IT.VectorTileHub.Providers.SqlServer --version 1.0.0
+# or .Providers.Oracle / .Providers.Postgis</code></pre>
+      <p>…which results in:</p>
+      <pre data-lang="xml"><code>&lt;ItemGroup&gt;
+  &lt;PackageReference Include="K1Soft.IT.VectorTileHub.Server" Version="1.0.0" /&gt;
+  &lt;PackageReference Include="K1Soft.IT.VectorTileHub.Providers.SqlServer" Version="1.0.0" /&gt;
+&lt;/ItemGroup&gt;</code></pre>
+      <div class="callout note"><span class="ic">i</span><p>The facade pulls in <code class="inl">Core</code>,
+        <code class="inl">Storage</code>, <code class="inl">Jobs</code>, <code class="inl">AspNetCore</code>
+        and <code class="inl">Abstractions</code> transitively — all from the same feed. Your host project
+        should use the Web SDK (<code class="inl">&lt;Project Sdk="Microsoft.NET.Sdk.Web"&gt;</code>).</p></div>
+
+      <div class="callout tip"><span class="ic">✓</span><p>Re-publishing a new build? Bump
+        <code class="inl">&lt;Version&gt;</code> in <code class="inl">Directory.Build.props</code>, then
+        <code class="inl">dotnet pack VectorTileHub.slnx -c Release -o "F:\OneDrive\NUGetLocalPackages"</code>.
+        Clear the NuGet cache (<code class="inl">dotnet nuget locals all --clear</code>) if a consumer
+        keeps resolving the old version.</p></div>
+    </section>
+
+    <!-- APPSETTINGS -->
+    <section id="appsettings">
+      <h2>Configure: <code class="inl">appsettings.json</code></h2>
+      <p>Two sections: a connection string for your spatial DB, and the <code class="inl">VectorTileHub</code>
+        options block.</p>
+      <pre data-lang="json"><code>{
+  "ConnectionStrings": {
+    "Default": "Server=127.0.0.1;Database=GisDb;User ID=sa;Password=***;TrustServerCertificate=True"
+  },
+  "VectorTileHub": {
+    "Enabled": true,
+    "RoutePrefix": "/vector-tile-hub",
+    "DefaultServingSrid": 3857,
+    "DefaultTileExtent": 4096,
+    "DefaultTileBuffer": 64,
+    "LayerConfigFolder": "VectorTileHub/Layers",
+    "DefaultCacheRootFolder": "C:\\Temp\\VectorTileHub\\Cache",
+    "UseResponseCompression": true,
+    "UseMemoryCache": true,
+    "UseDiskCache": true,
+    "HealthCheckPath": "/vector-tile-hub/health",
+    "InternalSettingsStore": {
+      "Provider": "Sqlite",
+      "ConnectionString": "Data Source=C:\\Temp\\VectorTileHub\\vector_tile_hub.db"
+    },
+    "Hangfire": { "Enabled": true, "DashboardPath": "/vector-tile-hub/jobs" }
+  }
+}</code></pre>
+      <p class="muted">Every option is documented in the <a href="#options">Options reference</a>.
+        <code class="inl">RoutePrefix</code> is advisory only — you own routing.</p>
+    </section>
+
+    <!-- LAYER -->
+    <section id="layer">
+      <h2>Define a layer</h2>
+      <p>Layers are JSON files discovered from <code class="inl">LayerConfigFolder</code> (relative to the
+        content root). One file per layer, e.g. <code class="inl">VectorTileHub/Layers/82-parcels.json</code>.</p>
+      <pre data-lang="json"><code>{
+  "id": 82,
+  "layerKey": "parcels",
+  "layerName": "Parcels Layer",
+  "enabled": true,
+
+  "provider": {
+    "type": "SqlServer",                 // matches your AddVectorTileHub&lt;Db&gt;Provider()
+    "connectionStringName": "Default",
+    "tableName": "[GisDb].[dbo].[Parcels]",
+    "idColumn": "Id",
+    "geometryColumn": "Geom",
+    "sourceSrid": 4326,                  // 4326 (lon/lat) or 3857 (Web Mercator)
+    "commandTimeoutSeconds": 120         // null = 30s default, 0 = no timeout
+  },
+
+  "tile": {
+    "minZoom": 12,
+    "maxZoom": 17,
+    "maxGenerationZoom": 17,             // caps cache GENERATION only (serving honors maxZoom)
+    "extent": 4096,                      // MVT grid resolution within a tile
+    "buffer": 64,
+    "clipGeometry": true,
+    "returnEmptyTileOutsideZoomRange": true,
+    "allowOnDemandGeneration": true
+  },
+
+  "extent": { "minX": 38.93, "minY": 21.40, "maxX": 39.56, "maxY": 22.36, "srid": 4326 },
+
+  "attributes": { "include": [ "PARCELNUMBER", "LAND_USES", "DISTRICT" ] },
+
+  "cacheRules": [
+    { "variantKey": "default", "isDefault": true },
+    { "variantKey": "residential",
+      "filter": { "column": "LAND_USES", "operator": "In", "values": [ "Villa", "Housing" ] } }
+  ],
+
+  "cache": { "enabled": true, "refreshPeriodMinutes": 1440 }
+}</code></pre>
+      <p class="muted">Full field docs in the <a href="#schema">Layer schema reference</a>.</p>
+    </section>
+
+    <!-- PROGRAM -->
+    <section id="program">
+      <h2>Register services (<code class="inl">Program.cs</code>)</h2>
+      <pre data-lang="csharp"><code>using K1Soft.IT.VectorTileHub;                       // AddVectorTileHubServer
+using K1Soft.IT.VectorTileHub.AspNetCore;            // UseVectorTileHubHangfireDashboard
+using K1Soft.IT.VectorTileHub.Providers.SqlServer;   // AddVectorTileHubSqlServerProvider
+using K1Soft.IT.VectorTileHub.Storage;               // EnsureVectorTileHubStorageAsync
+
+var builder = WebApplication.CreateBuilder(args);
+
+// 1) The host owns MVC. AddControllers() also feeds Swagger's API explorer.
+builder.Services.AddControllers();
+
+// 2) Your own auth — the library enforces none.
+builder.Services.AddAuthentication(/* your scheme */);
+builder.Services.AddAuthorization();
+
+// 3) Register the VectorTileHub services (core + storage + jobs). Provider-agnostic.
+builder.Services.AddVectorTileHubServer(builder.Configuration);
+
+// 4) Register exactly the provider(s) your layers use.
+builder.Services.AddVectorTileHubSqlServerProvider();
+//     .AddVectorTileHubOracleProvider();
+//     .AddVectorTileHubPostgisProvider();
+
+var app = builder.Build();
+
+// 5) Create/upgrade the internal SQLite settings store and warm its in-memory mirror.
+await app.Services.EnsureVectorTileHubStorageAsync();
+
+// 6) Host-owned pipeline — YOU decide what is exposed.
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();                                  // your tile/layer/admin controllers
+app.MapHealthChecks("/vector-tile-hub/health");        // optional
+app.UseVectorTileHubHangfireDashboard(/* auth filter */); // optional, opt-in, host-secured
+
+app.Run();</code></pre>
+      <ul>
+        <li><code class="inl">AddVectorTileHubServer</code> = core + storage + health-check registration
+          + Hangfire jobs + <code class="inl">IVectorTileCacheAdmin</code>. <strong>Services only.</strong></li>
+        <li>The provider is separate and pluggable — register one per data technology.</li>
+        <li><code class="inl">EnsureVectorTileHubStorageAsync()</code> must run once at startup.</li>
+      </ul>
+    </section>
+
+    <!-- CONTROLLERS -->
+    <section id="controllers">
+      <h2>Your controllers</h2>
+      <p>This is where you choose routes and security. Copy these from the Sample
+        (<code class="inl">TilesController</code>, <code class="inl">LayersController</code>,
+        <code class="inl">CacheAdminController</code>).</p>
+
+      <h3>Tile endpoint</h3>
+      <pre data-lang="csharp"><code>[ApiController]
+[Route("vector-tile-hub")]
+public sealed class TilesController : ControllerBase
+{
+    private readonly IVectorTileService _tiles;
+    public TilesController(IVectorTileService tiles) =&gt; _tiles = tiles;
+
+    [HttpGet("tiles/{layerId:int}/{z:int}/{x:int}/{y:int}.pbf")]
+    public async Task&lt;IActionResult&gt; GetTile(int layerId, int z, int x, int y,
+        [FromQuery] string? variant, CancellationToken ct)
+    {
+        // Host decides the variant: honor ?variant=, or derive from identity, e.g.
+        //   variant = User.IsInRole("Resident") ? "residential" : null;
+        var result = await _tiles.GetTileAsync(layerId, z, x, y, variant, ct);
+
+        if (result.Status == VectorTileResultStatus.Ok)
+        {
+            Response.Headers["X-VTH-From-Cache"] = result.FromCache ? "true" : "false";
+            Response.Headers["X-VTH-Stale"]      = result.IsStale   ? "true" : "false";
+        }
+
+        return result.Status switch
+        {
+            VectorTileResultStatus.Ok                 =&gt; File(result.TileBytes, result.ContentType),
+            VectorTileResultStatus.NoContent          =&gt; NoContent(),                 // 204, outside extent
+            VectorTileResultStatus.BadRequest         =&gt; BadRequest(new { error = result.Error }),
+            VectorTileResultStatus.NotFound           =&gt; NotFound(new { error = result.Error }),
+            VectorTileResultStatus.ServiceUnavailable =&gt; StatusCode(503, new { error = result.Error }),
+            _                                         =&gt; StatusCode(500, new { error = result.Error })
+        };
+    }
+}</code></pre>
+
+      <h3>Layer metadata endpoint</h3>
+      <pre data-lang="csharp"><code>[ApiController]
+[Route("vector-tile-hub")]
+public sealed class LayersController : ControllerBase
+{
+    private readonly IVectorTileLayerConfigProvider _provider;
+    public LayersController(IVectorTileLayerConfigProvider provider) =&gt; _provider = provider;
+
+    [HttpGet("layers")]
+    public IActionResult GetLayers() =&gt;
+        Ok(new { layers = _provider.GetAllLayers().Where(l =&gt; l.Enabled).Select(ToDto) });
+
+    [HttpGet("layers/{layerId:int}")]
+    public IActionResult GetLayer(int layerId)
+    {
+        var l = _provider.GetLayer(layerId);
+        return l is null || !l.Enabled ? NotFound() : Ok(ToDto(l));
+    }
+
+    private static object ToDto(VectorTileLayerConfig l) =&gt; new
+    {
+        id = l.Id, layerName = l.LayerName,
+        minZoom = l.Tile.MinZoom, maxZoom = l.Tile.MaxZoom,
+        tileUrlTemplate = $"/vector-tile-hub/tiles/{l.Id}/{{z}}/{{x}}/{{y}}.pbf",
+        variants = l.CacheRules.Count &gt; 0
+            ? l.CacheRules.Select(r =&gt; r.VariantKey).ToArray()
+            : new[] { VectorTileVariant.DefaultKey },
+        attributes = l.Attributes.Include
+    };
+}</code></pre>
+
+      <h3>Cache-admin endpoint (secured)</h3>
+      <pre data-lang="csharp"><code>[ApiController]
+[Route("vector-tile-hub/admin/layers")]
+[Authorize(Roles = "GISAdmin")]                  // host-applied policy — the library enforces none
+public sealed class CacheAdminController : ControllerBase
+{
+    private readonly IVectorTileCacheAdmin _admin;
+    public CacheAdminController(IVectorTileCacheAdmin admin) =&gt; _admin = admin;
+
+    [HttpPost("{layerId:int}/cache/generate")]
+    public IActionResult Generate(int layerId, [FromBody] GenerateDto? r) =&gt;
+        Accepted(new { jobId = _admin.EnqueueGenerate(layerId, r?.MinZoom, r?.MaxZoom, r?.Variants, r?.MaxDegreeOfParallelism) });
+
+    [HttpGet("{layerId:int}/cache/status")]
+    public async Task&lt;IActionResult&gt; Status(int layerId, CancellationToken ct) =&gt;
+        await _admin.GetStatusAsync(layerId, ct) is { } s ? Ok(s) : NotFound();
+
+    public sealed record GenerateDto(int? MinZoom, int? MaxZoom, string[]? Variants, int? MaxDegreeOfParallelism);
+}</code></pre>
+      <div class="callout note"><span class="ic">i</span><p>The host defines the HTTP request DTOs (the
+        JSON shape is your concern). Service methods take primitive parameters — see the
+        <a href="#services">Service reference</a>.</p></div>
+    </section>
+
+    <!-- SECURITY -->
+    <section id="security">
+      <h2>Security</h2>
+      <ul>
+        <li><strong>Tiles</strong> — typically anonymous, or <code class="inl">[Authorize]</code>. To serve
+          filtered data per user, map the role to a variant key and pass it to
+          <code class="inl">GetTileAsync</code>.</li>
+        <li><strong>Admin/config</strong> — guard with <code class="inl">[Authorize(Roles = "…")]</code> or a
+          policy. These trigger destructive cache operations.</li>
+        <li><strong>Hangfire dashboard</strong> — supply an <code class="inl">IDashboardAuthorizationFilter</code>;
+          with none, Hangfire's default permits local requests only.</li>
+      </ul>
+      <pre data-lang="csharp"><code>using Hangfire.Dashboard;
+
+public sealed class DashboardAuthFilter : IDashboardAuthorizationFilter
+{
+    public bool Authorize(DashboardContext context) =&gt;
+        context.GetHttpContext().User?.IsInRole("GISAdmin") == true;
+}
+
+// Program.cs
+app.UseVectorTileHubHangfireDashboard(new DashboardAuthFilter());</code></pre>
+    </section>
+
+    <!-- RUN -->
+    <section id="run">
+      <h2>Run &amp; verify</h2>
+      <pre data-lang="powershell"><code>dotnet build
+dotnet run</code></pre>
+      <table>
+        <tr><th>Check</th><th>URL</th></tr>
+        <tr><td>Layer list</td><td><code class="inl">GET /vector-tile-hub/layers</code></td></tr>
+        <tr><td>Single layer</td><td><code class="inl">GET /vector-tile-hub/layers/82</code></td></tr>
+        <tr><td>A tile</td><td><code class="inl">GET /vector-tile-hub/tiles/82/14/9123/6321.pbf</code></td></tr>
+        <tr><td>Filtered tile</td><td><code class="inl">GET /vector-tile-hub/tiles/82/14/9123/6321.pbf?variant=residential</code></td></tr>
+        <tr><td>Health</td><td><code class="inl">GET /vector-tile-hub/health</code></td></tr>
+        <tr><td>Jobs dashboard</td><td><code class="inl">GET /vector-tile-hub/jobs</code></td></tr>
+      </table>
+      <p>A tile returns <code class="inl">200</code> with <code class="inl">Content-Type:
+        application/x-protobuf</code> and <code class="inl">X-VTH-*</code> headers. Coordinates outside the
+        layer's <code class="inl">extent</code> return <code class="inl">204 No Content</code>.</p>
+    </section>
+
+    <!-- PROVIDERS -->
+    <section id="providers">
+      <h2>Database providers</h2>
+      <p>Register the provider, then point each layer at it via <code class="inl">provider.type</code>
+        (case-sensitive keyed name).</p>
+      <table>
+        <tr><th>Provider</th><th>Registration</th><th><code class="inl">provider.type</code></th><th>Driver</th></tr>
+        <tr><td>SQL Server</td><td><code class="inl">AddVectorTileHubSqlServerProvider()</code></td><td><code class="inl">"SqlServer"</code></td><td>Microsoft.Data.SqlClient</td></tr>
+        <tr><td>Oracle</td><td><code class="inl">AddVectorTileHubOracleProvider()</code></td><td><code class="inl">"Oracle"</code></td><td>Oracle.ManagedDataAccess.Core</td></tr>
+        <tr><td>PostGIS</td><td><code class="inl">AddVectorTileHubPostgisProvider()</code></td><td><code class="inl">"Postgis"</code></td><td>Npgsql</td></tr>
+      </table>
+      <p>You can register multiple providers; each layer picks one. All providers read the connection
+        string from <code class="inl">connectionString</code> or <code class="inl">connectionStringName</code>,
+        honor <code class="inl">commandTimeoutSeconds</code>, emit geometry as WKB, and intersect the tile
+        envelope against the geometry column.</p>
+
+      <h3>SRID handling</h3>
+      <ul>
+        <li><code class="inl">sourceSrid: 4326</code> — query envelope is converted to lon/lat for the spatial
+          predicate; returned geometries are reprojected 4326 → 3857 for tiling.</li>
+        <li><code class="inl">sourceSrid: 3857</code> — used as-is. The stored geometry's SRID must match
+          <code class="inl">sourceSrid</code>.</li>
+      </ul>
+
+      <h3>Spatial predicate per provider</h3>
+      <table>
+        <tr><th>Provider</th><th>WHERE (essence)</th></tr>
+        <tr><td>SQL Server</td><td><code class="inl">Geom.STIntersects(geometry::STGeomFromWKB(@envelope, @srid)) = 1</code></td></tr>
+        <tr><td>Oracle</td><td><code class="inl">SDO_RELATE(Geom, SDO_GEOMETRY(...), 'mask=ANYINTERACT') = 'TRUE'</code></td></tr>
+        <tr><td>PostGIS</td><td><code class="inl">ST_Intersects(geom, ST_MakeEnvelope(@minx,@miny,@maxx,@maxy,@srid))</code></td></tr>
+      </table>
+      <div class="callout warn"><span class="ic">!</span><p><strong>A spatial index is essential.</strong>
+        Low-zoom tiles cover huge areas; without an index every tile triggers a table scan and queries time
+        out. Create one bounded to your data extent and verify the optimizer uses it.</p></div>
+      <pre data-lang="sql"><code>-- SQL Server (bound the grid to your data extent)
+CREATE SPATIAL INDEX idx_Spatial_Parcels ON [dbo].[Parcels]([Geom])
+USING GEOMETRY_AUTO_GRID
+WITH (BOUNDING_BOX = (38.9, 21.4, 39.6, 22.4), CELLS_PER_OBJECT = 16, DROP_EXISTING = ON);
+
+-- PostGIS
+CREATE INDEX ON parcels USING GIST (geom);</code></pre>
+      <div class="callout note"><span class="ic">i</span><p><strong>PostGIS:</strong> variant filters cast the
+        column to <code class="inl">::text</code> because PostgreSQL won't implicitly compare a non-text column
+        to a text parameter. Functionally identical to the other providers.</p></div>
+    </section>
+
+    <!-- CACHING -->
+    <section id="caching">
+      <h2>Caching &amp; background jobs</h2>
+      <p>Tiles are cached on disk (and optionally in memory). They enter the cache two ways:</p>
+      <ol>
+        <li><strong>On-demand</strong> — a requested-but-uncached tile is generated, cached, and returned
+          (when <code class="inl">tile.allowOnDemandGeneration = true</code>).</li>
+        <li><strong>Pre-generation</strong> — a Hangfire job renders a zoom range up front via
+          <code class="inl">IVectorTileCacheAdmin.EnqueueGenerate(...)</code>.</li>
+      </ol>
+      <table>
+        <tr><th>Method</th><th>Effect</th></tr>
+        <tr><td><code class="inl">EnqueueGenerate(layerId, minZoom?, maxZoom?, variants?, maxDegreeOfParallelism?)</code></td><td>Background pre-generation. Returns the job id.</td></tr>
+        <tr><td><code class="inl">EnqueueDelete(layerId, cacheVersion?, deleteAllVersions)</code></td><td>Background cache deletion.</td></tr>
+        <tr><td><code class="inl">EnqueueNotifyChange(layerId, minX, minY, maxX, maxY, srid, variants?)</code></td><td>Background refresh of tiles in a bbox.</td></tr>
+        <tr><td><code class="inl">EnqueueSwap(layerId, newVersion?, regenerateAfterSwap, deleteOldVersion)</code></td><td>Atomic blue/green version swap.</td></tr>
+        <tr><td><code class="inl">InvalidateAsync(...)</code></td><td><strong>Synchronous</strong> removal of cached tiles in a bbox. Returns <code class="inl">null</code> if the layer is unknown.</td></tr>
+        <tr><td><code class="inl">GetStatusAsync(layerId, ct)</code></td><td>Active version, generation status, timestamps.</td></tr>
+      </table>
+      <h3>Performance knobs</h3>
+      <ul>
+        <li><strong><code class="inl">maxDegreeOfParallelism</code></strong> — generation parallelism across tiles.</li>
+        <li><strong><code class="inl">tile.maxGenerationZoom</code></strong> — caps generation depth; deeper zooms generate on demand.</li>
+        <li><strong><code class="inl">layer.extent</code></strong> — bounds generation and builds an in-memory R-tree from a single full-layer query (far faster than one DB query per tile). Also enables <em>extent gating</em>: tile requests outside the extent short-circuit to <code class="inl">204</code> with no DB query.</li>
+      </ul>
+      <h3>Stale-while-revalidate</h3>
+      <p><code class="inl">cache.refreshPeriodMinutes &gt; 0</code> serves a cached tile immediately even when older
+        than the window and enqueues a background refresh (<code class="inl">X-VTH-Stale: true</code>).
+        <code class="inl">0</code> = never stale.</p>
+      <div class="callout note"><span class="ic">i</span><p>Hangfire uses <strong>in-memory</strong> storage by
+        default — jobs don't survive a restart. Swap to durable Hangfire storage if you need persistence.</p></div>
+    </section>
+
+    <!-- VARIANTS -->
+    <section id="variants">
+      <h2>Variants (filtered caches)</h2>
+      <p>A variant is an independently cached, separately addressable filtered view. The library is
+        role-agnostic: the host maps a user/role to a <code class="inl">variantKey</code> and passes it to
+        <code class="inl">GetTileAsync</code>; the variant's server-side filter scopes the rows.</p>
+      <pre data-lang="json"><code>"cacheRules": [
+  { "variantKey": "default", "isDefault": true },
+  { "variantKey": "residential",
+    "filter": { "column": "LAND_USES", "operator": "In", "values": [ "Villa", "Housing" ] } }
+]</code></pre>
+      <table>
+        <tr><th>Operator</th><th>Predicate</th><th>values</th></tr>
+        <tr><td><code class="inl">Equals</code></td><td><code class="inl">col = @v0</code> (or <code class="inl">IN</code> if multiple)</td><td>1+</td></tr>
+        <tr><td><code class="inl">In</code></td><td><code class="inl">col IN (@v0, @v1, …)</code></td><td>1+</td></tr>
+        <tr><td><code class="inl">NotEquals</code></td><td><code class="inl">col &lt;&gt; @v0</code></td><td>1</td></tr>
+        <tr><td><code class="inl">IsNull</code></td><td><code class="inl">col IS NULL</code></td><td>—</td></tr>
+        <tr><td><code class="inl">IsNotNull</code></td><td><code class="inl">col IS NOT NULL</code></td><td>—</td></tr>
+      </table>
+      <p>Values are always bound as parameters — never concatenated into SQL. Serve a variant with
+        <code class="inl">?variant=residential</code>; each variant has its own cache entries and its own
+        slot in pre-generation.</p>
+    </section>
+
+    <!-- ZOOM -->
+    <section id="zoom">
+      <h2>Zoom ranges &amp; client over-zoom</h2>
+      <ul>
+        <li><code class="inl">tile.minZoom</code> / <code class="inl">tile.maxZoom</code> — the served zoom band.</li>
+        <li><strong>Over-zoom past <code class="inl">maxZoom</code></strong> is a client concern: set the map's
+          GL-style <em>source</em> <code class="inl">maxzoom</code> to the layer's <code class="inl">maxZoom</code>.
+          The renderer then keeps drawing the top-zoom tiles, scaled, instead of requesting tiles that don't exist.</li>
+      </ul>
+      <div class="callout note"><span class="ic">i</span><p><code class="inl">tile.extent</code> (e.g.
+        <code class="inl">4096</code>) is the MVT grid resolution <em>within a single tile</em> — unrelated to
+        geographic extent or zoom. Leave it at 4096 unless you have a specific reason.</p></div>
+    </section>
+
+    <!-- FRONTEND -->
+    <section id="frontend">
+      <h2>Frontend integration (OpenLayers)</h2>
+      <p>Using OpenLayers + ol-mapbox-style:</p>
+      <pre data-lang="javascript"><code>// 1) Read layer metadata from YOUR endpoint.
+const meta = await (await fetch('/vector-tile-hub/layers/82')).json();
+
+// 2) Load a Mapbox GL style whose vector source points at YOUR tile route.
+const style = await (await fetch('/ol-style.json')).json();
+
+// 3) Clamp the source zoom range so the renderer OVER-ZOOMS beyond maxZoom
+//    instead of requesting missing tiles.
+const src = style.sources.vth;
+if (Number.isFinite(meta.minZoom)) src.minzoom = meta.minZoom;
+if (Number.isFinite(meta.maxZoom)) src.maxzoom = meta.maxZoom;
+
+await olms.apply(map, style);   // ol-mapbox-style</code></pre>
+      <p class="muted">The GL source's <code class="inl">tiles</code> URL is your tile route, e.g.
+        <code class="inl">"/vector-tile-hub/tiles/82/{z}/{x}/{y}.pbf"</code>. The Sample ships a working
+        <code class="inl">app.js</code>, <code class="inl">index.html</code>, and an SLD→GL-style converter.</p>
+    </section>
+
+    <!-- HEALTH -->
+    <section id="health">
+      <h2>Health checks</h2>
+      <p><code class="inl">AddVectorTileHub</code> registers a health check named
+        <code class="inl">VectorTileHub</code>; the host maps it:</p>
+      <pre data-lang="csharp"><code>app.MapHealthChecks("/vector-tile-hub/health");</code></pre>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services">
+      <h2>Service reference</h2>
+      <h3>IVectorTileService</h3>
+      <pre data-lang="csharp"><code>Task&lt;VectorTileResult&gt; GetTileAsync(int layerId, int z, int x, int y, string? variantKey, CancellationToken ct);</code></pre>
+      <h3>IVectorTileLayerConfigProvider</h3>
+      <pre data-lang="csharp"><code>VectorTileLayerConfig? GetLayer(int layerId);
+VectorTileLayerConfig? GetLayerByKey(string layerKey);
+IReadOnlyList&lt;VectorTileLayerConfig&gt; GetAllLayers();
+Task ReloadAsync(CancellationToken ct);   // re-reads layer JSON files from disk</code></pre>
+      <h3>IVectorTileCacheAdmin</h3>
+      <pre data-lang="csharp"><code>string EnqueueGenerate(int layerId, int? minZoom, int? maxZoom, string[]? variants, int? maxDegreeOfParallelism);
+string EnqueueDelete(int layerId, string? cacheVersion, bool deleteAllVersions);
+string EnqueueNotifyChange(int layerId, double minX, double minY, double maxX, double maxY, int srid, string[]? variants);
+CacheSwapResult EnqueueSwap(int layerId, string? newVersion, bool regenerateAfterSwap, bool deleteOldVersion);
+Task&lt;CacheInvalidateResult?&gt; InvalidateAsync(int layerId, double minX, double minY, double maxX, double maxY, int srid, string[]? variants, CancellationToken ct);
+Task&lt;VectorTileLayerRuntimeSettings?&gt; GetStatusAsync(int layerId, CancellationToken ct);
+
+record CacheSwapResult(string JobId, string NewVersion);
+record CacheInvalidateResult(int TilesInvalidated, int[] ZoomLevelsAffected);</code></pre>
+      <h3>VectorTileResult</h3>
+      <table>
+        <tr><th>Member</th><th>Meaning</th></tr>
+        <tr><td><code class="inl">Status</code></td><td><code class="inl">Ok · NoContent · BadRequest · Unauthorized · Forbidden · NotFound · ServiceUnavailable</code></td></tr>
+        <tr><td><code class="inl">TileBytes</code></td><td>Encoded MVT/PBF bytes (when Ok).</td></tr>
+        <tr><td><code class="inl">ContentType</code></td><td><code class="inl">application/x-protobuf</code></td></tr>
+        <tr><td><code class="inl">FromCache</code> / <code class="inl">IsStale</code></td><td>Cache provenance; stale tile served + refresh enqueued.</td></tr>
+        <tr><td><code class="inl">Error</code></td><td>Message for non-Ok statuses.</td></tr>
+      </table>
+    </section>
+
+    <!-- OPTIONS -->
+    <section id="options">
+      <h2>Options reference (<code class="inl">VectorTileHubOptions</code>)</h2>
+      <table>
+        <tr><th>Option</th><th>Default</th><th>Notes</th></tr>
+        <tr><td><code class="inl">Enabled</code></td><td><code class="inl">true</code></td><td>Master switch.</td></tr>
+        <tr><td><code class="inl">RoutePrefix</code></td><td><code class="inl">/vector-tile-hub</code></td><td>Advisory only — host owns routing.</td></tr>
+        <tr><td><code class="inl">DefaultServingSrid</code></td><td><code class="inl">3857</code></td><td>Served tile SRID.</td></tr>
+        <tr><td><code class="inl">DefaultTileExtent</code></td><td><code class="inl">4096</code></td><td>Default MVT grid resolution.</td></tr>
+        <tr><td><code class="inl">DefaultTileBuffer</code></td><td><code class="inl">64</code></td><td>Default tile buffer.</td></tr>
+        <tr><td><code class="inl">LayerConfigPaths</code></td><td><code class="inl">[]</code></td><td>Explicit layer-file paths.</td></tr>
+        <tr><td><code class="inl">LayerConfigFolder</code></td><td><code class="inl">VectorTileHub/Layers</code></td><td>Folder scanned for *.json layers.</td></tr>
+        <tr><td><code class="inl">DefaultCacheRootFolder</code></td><td><code class="inl">VectorTileHub/Cache</code></td><td>Disk cache root.</td></tr>
+        <tr><td><code class="inl">UseMemoryCache</code> / <code class="inl">UseDiskCache</code></td><td><code class="inl">true</code></td><td>Cache layers.</td></tr>
+        <tr><td><code class="inl">HealthCheckPath</code></td><td><code class="inl">/vector-tile-hub/health</code></td><td>Path you map.</td></tr>
+        <tr><td><code class="inl">InternalSettingsStore.ConnectionString</code></td><td><code class="inl">null</code></td><td>null = auto-create local SQLite db.</td></tr>
+        <tr><td><code class="inl">Hangfire.DashboardPath</code></td><td><code class="inl">/vector-tile-hub/jobs</code></td><td>Dashboard route.</td></tr>
+      </table>
+    </section>
+
+    <!-- SCHEMA -->
+    <section id="schema">
+      <h2>Layer schema reference</h2>
+      <table>
+        <tr><th>Field</th><th>Type</th><th>Default</th><th>Notes</th></tr>
+        <tr><td><code class="inl">id</code></td><td>int</td><td>—</td><td>Layer id used in routes.</td></tr>
+        <tr><td><code class="inl">layerKey</code> / <code class="inl">layerName</code></td><td>string</td><td>—</td><td>Stable key / display name.</td></tr>
+        <tr><td><code class="inl">enabled</code></td><td>bool</td><td><code class="inl">true</code></td><td>—</td></tr>
+        <tr><td><code class="inl">provider.type</code></td><td>string</td><td>—</td><td><code class="inl">SqlServer · Oracle · Postgis</code> (case-sensitive).</td></tr>
+        <tr><td><code class="inl">provider.connectionString[Name]</code></td><td>string?</td><td>—</td><td>Inline, or name in <code class="inl">ConnectionStrings</code>.</td></tr>
+        <tr><td><code class="inl">provider.tableName</code></td><td>string</td><td>—</td><td>Source table/view (schema-qualified ok).</td></tr>
+        <tr><td><code class="inl">provider.idColumn</code> / <code class="inl">geometryColumn</code></td><td>string</td><td><code class="inl">Id</code> / <code class="inl">Geom</code></td><td>—</td></tr>
+        <tr><td><code class="inl">provider.sourceSrid</code></td><td>int</td><td><code class="inl">3857</code></td><td><code class="inl">4326</code> or <code class="inl">3857</code>.</td></tr>
+        <tr><td><code class="inl">provider.commandTimeoutSeconds</code></td><td>int?</td><td>null</td><td>null = 30s; 0 = no timeout.</td></tr>
+        <tr><td><code class="inl">tile.minZoom</code> / <code class="inl">maxZoom</code></td><td>int</td><td><code class="inl">0</code> / <code class="inl">21</code></td><td>Served zoom band.</td></tr>
+        <tr><td><code class="inl">tile.maxGenerationZoom</code></td><td>int?</td><td>null</td><td>Caps generation only.</td></tr>
+        <tr><td><code class="inl">tile.extent</code> / <code class="inl">buffer</code></td><td>int</td><td>—</td><td>MVT grid resolution / edge buffer.</td></tr>
+        <tr><td><code class="inl">tile.clipGeometry</code></td><td>bool</td><td><code class="inl">true</code></td><td>Clip to tile + buffer.</td></tr>
+        <tr><td><code class="inl">tile.allowOnDemandGeneration</code></td><td>bool</td><td><code class="inl">true</code></td><td>Generate-and-cache on a miss.</td></tr>
+        <tr><td><code class="inl">extent</code></td><td>object?</td><td>null</td><td>Geographic bounds; enables gating + bounded generation.</td></tr>
+        <tr><td><code class="inl">attributes.include</code></td><td>string[]</td><td><code class="inl">[]</code></td><td>Columns emitted as feature properties.</td></tr>
+        <tr><td><code class="inl">cacheRules</code></td><td>array</td><td><code class="inl">[]</code></td><td>Variants. Empty = one unfiltered <code class="inl">default</code>.</td></tr>
+        <tr><td><code class="inl">cache.refreshPeriodMinutes</code></td><td>int</td><td><code class="inl">0</code></td><td>Stale-while-revalidate window; 0 = never stale.</td></tr>
+      </table>
+    </section>
+
+    <!-- TROUBLE -->
+    <section id="trouble">
+      <h2>Troubleshooting &amp; performance</h2>
+      <table>
+        <tr><th>Symptom</th><th>Cause / fix</th></tr>
+        <tr><td>Tiles time out / slow generation</td><td>No spatial index, or the optimizer ignores it. Build/rebuild it bounded to your data extent.</td></tr>
+        <tr><td><code class="inl">204 No Content</code> for tiles you expect</td><td>Coordinate is outside <code class="inl">layer.extent</code> (gating), or outside the zoom band.</td></tr>
+        <tr><td>Layer not found at runtime</td><td><code class="inl">provider.type</code> doesn't match a registered provider key (case-sensitive), or you forgot <code class="inl">AddVectorTileHub&lt;Db&gt;Provider()</code>.</td></tr>
+        <tr><td>Map blank above a zoom level</td><td>Set the GL source <code class="inl">maxzoom</code> to the layer's <code class="inl">maxZoom</code> (client over-zoom).</td></tr>
+        <tr><td>Many <code class="inl">TaskCanceledException</code></td><td>Usually benign client cancellations. Genuine <em>Execution Timeout Expired</em> = the spatial-index problem.</td></tr>
+        <tr><td>EF <code class="inl">…Database.Command</code> log spam</td><td>Set <code class="inl">"Microsoft.EntityFrameworkCore.Database.Command": "Warning"</code> in logging.</td></tr>
+        <tr><td>Consumer keeps resolving old package version</td><td><code class="inl">dotnet nuget locals all --clear</code> after bumping the version.</td></tr>
+        <tr><td>Build error <code class="inl">MSB3027/MSB3021 … file in use</code></td><td>The host app is running and locking its <code class="inl">bin</code> dlls. Stop it, then rebuild.</td></tr>
+      </table>
+      <h3>Recommended generation strategy</h3>
+      <ol>
+        <li>Set <code class="inl">layer.extent</code> to the real data bounds (fast R-tree path + gating).</li>
+        <li>Cap deep zooms with <code class="inl">tile.maxGenerationZoom</code>; let the deepest zooms generate on demand.</li>
+        <li>Pre-generate with a sensible <code class="inl">maxDegreeOfParallelism</code>; watch progress in the dashboard.</li>
+        <li>Use <code class="inl">EnqueueNotifyChange</code> / <code class="inl">InvalidateAsync</code> for incremental updates; <code class="inl">EnqueueSwap</code> for full blue/green rebuilds.</li>
+      </ol>
+    </section>
+  </main>
+</div>
+
+<footer>
+  VectorTileHub v1.0.0 · .NET 10 · Service-only architecture (the library exposes no HTTP endpoints; the host owns controllers).
+</footer>
+
+<script>
+  // Theme toggle (persisted)
+  (function(){
+    const root = document.documentElement;
+    try { const saved = localStorage.getItem('vth-theme'); if (saved) root.dataset.theme = saved; } catch(e){}
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('vth-theme', root.dataset.theme); } catch(e){}
+    });
+  })();
+
+  // Mobile nav
+  document.getElementById('menuToggle').addEventListener('click', () =>
+    document.body.classList.toggle('nav-open'));
+  document.querySelectorAll('nav.side a').forEach(a =>
+    a.addEventListener('click', () => document.body.classList.remove('nav-open')));
+
+  // Copy buttons
+  document.querySelectorAll('pre').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.className = 'copy'; btn.type = 'button'; btn.textContent = 'Copy';
+    btn.addEventListener('click', () => {
+      const code = pre.querySelector('code');
+      navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(() => {
+        btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1400);
+      }).catch(() => { btn.textContent = 'Error'; });
+    });
+    pre.appendChild(btn);
+  });
+
+  // Active section highlight
+  (function(){
+    const links = [...document.querySelectorAll('nav.side a')];
+    const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          links.forEach(l => l.classList.remove('active'));
+          const a = map.get(e.target.id); if (a) a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-12% 0px -78% 0px', threshold: 0 });
+    document.querySelectorAll('section[id]').forEach(s => obs.observe(s));
+  })();
+</script>
+</body>
+</html>
