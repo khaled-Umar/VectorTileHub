@@ -18,6 +18,8 @@
     <RootNamespace>K1Soft.IT.VectorTileHub.Sample</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- The sample host is a demo app, never a published package. -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
 </Project>

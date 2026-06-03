@@ -1,0 +1,18 @@
+<Project>
+
+  <!-- Shared NuGet package metadata for all VectorTileHub library projects.
+       Consumable packages: Abstractions, Core, Storage, Jobs, AspNetCore, Server,
+       Providers.SqlServer, Providers.Oracle, Providers.Postgis.
+       The Sample (IsPackable=false) and test projects are not packed. -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Authors>K1Soft.IT</Authors>
+    <Company>K1Soft.IT</Company>
+    <Product>VectorTileHub</Product>
+    <Description>Reusable ASP.NET Core library for serving secure, cache-aware Mapbox Vector Tiles (MVT/PBF) from spatial databases (SQL Server, Oracle, PostGIS). The library exposes services; the host owns the HTTP surface.</Description>
+    <PackageTags>vector-tiles;mvt;mapbox;gis;tiles;postgis;sqlserver;oracle;aspnetcore;mapping;openlayers</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+</Project>
