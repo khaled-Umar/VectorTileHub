@@ -21,23 +21,40 @@ public sealed class EfRuntimeSettingsStore : IVectorTileRuntimeSettingsStore
 
     public async Task UpsertLayerRuntimeSettingsAsync(VectorTileLayerRuntimeSettings settings, CancellationToken cancellationToken)
     {
-        var entity = await _dbContext.LayerRuntimeSettings.FirstOrDefaultAsync(x => x.LayerId == settings.LayerId, cancellationToken);
-        if (entity is null)
+        // Concurrency-safe upsert with a one-shot retry: on first map load many concurrent tile
+        // requests race to lazily create the same layer's row, so a losing INSERT (UNIQUE violation
+        // on LayerId) is retried as an UPDATE of the row the winning request just committed.
+        for (var attempt = 0; ; attempt++)
         {
-            entity = new LayerRuntimeSettingsEntity { LayerId = settings.LayerId };
-            _dbContext.LayerRuntimeSettings.Add(entity);
+            var entity = await _dbContext.LayerRuntimeSettings.FirstOrDefaultAsync(x => x.LayerId == settings.LayerId, cancellationToken);
+            var isInsert = entity is null;
+            if (isInsert)
+            {
+                entity = new LayerRuntimeSettingsEntity { LayerId = settings.LayerId };
+                _dbContext.LayerRuntimeSettings.Add(entity);
+            }
+
+            entity!.ActiveCacheVersion = settings.ActiveCacheVersion;
+            entity.CacheGenerationStatus = settings.CacheGenerationStatus.ToString();
+            entity.CacheGenerationJobId = settings.CacheGenerationJobId;
+            entity.LastGenerationStartedAt = settings.LastGenerationStartedAt;
+            entity.LastGenerationCompletedAt = settings.LastGenerationCompletedAt;
+            entity.LastInvalidatedAt = settings.LastInvalidatedAt;
+            entity.UpdatedAt = DateTimeOffset.UtcNow;
+            entity.Metadata = settings.Metadata;
+
+            try
+            {
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                return;
+            }
+            catch (DbUpdateException) when (isInsert && attempt == 0)
+            {
+                // Another request inserted this LayerId first; drop our failed insert and retry,
+                // which now finds the existing row and updates it instead.
+                _dbContext.Entry(entity).State = EntityState.Detached;
+            }
         }
-
-        entity.ActiveCacheVersion = settings.ActiveCacheVersion;
-        entity.CacheGenerationStatus = settings.CacheGenerationStatus.ToString();
-        entity.CacheGenerationJobId = settings.CacheGenerationJobId;
-        entity.LastGenerationStartedAt = settings.LastGenerationStartedAt;
-        entity.LastGenerationCompletedAt = settings.LastGenerationCompletedAt;
-        entity.LastInvalidatedAt = settings.LastInvalidatedAt;
-        entity.UpdatedAt = DateTimeOffset.UtcNow;
-        entity.Metadata = settings.Metadata;
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<VectorTileLayerRuntimeSettings>> GetAllAsync(CancellationToken cancellationToken)

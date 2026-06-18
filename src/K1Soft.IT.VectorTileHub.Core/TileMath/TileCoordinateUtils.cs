@@ -80,19 +80,27 @@ public static class TileCoordinateUtils
     /// Converts a configured layer extent to a Web Mercator (EPSG:3857) envelope for tile math.
     /// Supports source SRIDs 4326 (lon/lat) and 3857 (mercator).
     /// </summary>
-    public static Envelope ToMercatorEnvelope(ExtentConfig extent)
+    public static Envelope ToMercatorEnvelope(ExtentConfig extent) =>
+        ToMercatorEnvelope(extent.MinX, extent.MinY, extent.MaxX, extent.MaxY, extent.Srid);
+
+    /// <summary>
+    /// Converts a bounding box expressed in <paramref name="srid"/> to a Web Mercator (EPSG:3857)
+    /// envelope for tile math. Supports source SRIDs 4326 (lon/lat) and 3857 (mercator). Callers pass
+    /// the bbox in whatever SRID they hold; this is the single place that normalises it to the tile CRS.
+    /// </summary>
+    public static Envelope ToMercatorEnvelope(double minX, double minY, double maxX, double maxY, int srid)
     {
-        switch (extent.Srid)
+        switch (srid)
         {
             case 3857:
-                return new Envelope(extent.MinX, extent.MaxX, extent.MinY, extent.MaxY);
-            case 4326:
-                var (minX, minY) = LonLatToMercator(extent.MinX, extent.MinY);
-                var (maxX, maxY) = LonLatToMercator(extent.MaxX, extent.MaxY);
                 return new Envelope(minX, maxX, minY, maxY);
+            case 4326:
+                var (mercMinX, mercMinY) = LonLatToMercator(minX, minY);
+                var (mercMaxX, mercMaxY) = LonLatToMercator(maxX, maxY);
+                return new Envelope(mercMinX, mercMaxX, mercMinY, mercMaxY);
             default:
                 throw new NotSupportedException(
-                    $"Extent SRID {extent.Srid} is not supported; use 4326 (lon/lat) or 3857 (Web Mercator).");
+                    $"SRID {srid} is not supported; use 4326 (lon/lat) or 3857 (Web Mercator).");
         }
     }
 

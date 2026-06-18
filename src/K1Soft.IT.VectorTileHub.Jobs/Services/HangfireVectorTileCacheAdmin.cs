@@ -1,5 +1,4 @@
 using Hangfire;
-using NetTopologySuite.Geometries;
 
 namespace K1Soft.IT.VectorTileHub.Jobs;
 
@@ -62,8 +61,9 @@ public sealed class HangfireVectorTileCacheAdmin : IVectorTileCacheAdmin
         var runtime = await _runtimeSettings.GetLayerRuntimeSettingsAsync(layerId, cancellationToken)
             ?? new VectorTileLayerRuntimeSettings { LayerId = layerId };
 
-        // BoundingBoxDto.ToEnvelope() built Envelope(minX, maxX, minY, maxY); keep that ordering.
-        var envelope = new Envelope(minX, maxX, minY, maxY);
+        // Tile math runs in Web Mercator metres, so normalise the caller's bbox (which may be in 4326
+        // or 3857) to 3857 first — otherwise a lon/lat bbox would target tiles at the map origin.
+        var envelope = TileCoordinateUtils.ToMercatorEnvelope(minX, minY, maxX, maxY, srid);
         var tiles = TileCoordinateUtils.GetAffectedTilesForZoomRange(envelope, layer.Tile.MinZoom, layer.Tile.MaxZoom).ToArray();
         var resolvedVariants = variants is { Length: > 0 }
             ? variants

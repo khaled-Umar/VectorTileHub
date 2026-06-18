@@ -1,5 +1,3 @@
-using NetTopologySuite.Geometries;
-
 namespace K1Soft.IT.VectorTileHub.Jobs;
 
 public sealed class CacheInvalidationJob
@@ -19,7 +17,9 @@ public sealed class CacheInvalidationJob
     {
         var layer = _layers.GetLayer(layerId) ?? throw new InvalidOperationException($"Layer {layerId} not found.");
         var runtime = await _settings.GetLayerRuntimeSettingsAsync(layerId, cancellationToken) ?? new VectorTileLayerRuntimeSettings { LayerId = layerId };
-        var envelope = new Envelope(minX, maxX, minY, maxY);
+
+        // Normalise the caller's bbox (4326 or 3857) to Web Mercator metres before tile math.
+        var envelope = TileCoordinateUtils.ToMercatorEnvelope(minX, minY, maxX, maxY, srid);
 
         var keys = variantKeys is { Length: > 0 }
             ? variantKeys
