@@ -19,11 +19,24 @@ public sealed class EfRuntimeSettingsStore : IVectorTileRuntimeSettingsStore
         return entity is null ? null : ToModel(entity);
     }
 
+    // Number of upsert attempts before a UNIQUE-violation is treated as a genuine failure
+    // rather than a lost insert race. See the loop below for why more than one retry is needed.
+    private const int MaxAttempts = 5;
+
     public async Task UpsertLayerRuntimeSettingsAsync(VectorTileLayerRuntimeSettings settings, CancellationToken cancellationToken)
     {
-        // Concurrency-safe upsert with a one-shot retry: on first map load many concurrent tile
-        // requests race to lazily create the same layer's row, so a losing INSERT (UNIQUE violation
-        // on LayerId) is retried as an UPDATE of the row the winning request just committed.
+        // Concurrency-safe upsert of the single row keyed by LayerId. On the first view of a
+        // newly-published layer the map fires many tile requests at once; each cache-miss lazily
+        // calls this upsert, so 3+ requests race to INSERT the same LayerId. The losers fail the
+        // INSERT with a UNIQUE violation and must retry as an UPDATE of the winner's row.
+        //
+        // Why a bounded *loop* and not a single retry: with SQLite, a write is not visible to other
+        // connections until it is committed (cross-connection visibility lag). A losing inserter's
+        // first retry re-SELECTs, but the winner may still not have committed, so the SELECT again
+        // returns null and it INSERTs (and fails) a second time. A one-shot retry therefore leaks a
+        // DbUpdateException under real concurrency. Looping a few times — with a tiny backoff so the
+        // winning commit becomes visible — lets the loser eventually SELECT the committed row and
+        // take the UPDATE path. Each iteration re-SELECTs at the top, so no extra query is needed.
         for (var attempt = 0; ; attempt++)
         {
             var entity = await _dbContext.LayerRuntimeSettings.FirstOrDefaultAsync(x => x.LayerId == settings.LayerId, cancellationToken);
@@ -48,11 +61,15 @@ public sealed class EfRuntimeSettingsStore : IVectorTileRuntimeSettingsStore
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 return;
             }
-            catch (DbUpdateException) when (isInsert && attempt == 0)
+            catch (DbUpdateException) when (isInsert && attempt < MaxAttempts - 1)
             {
-                // Another request inserted this LayerId first; drop our failed insert and retry,
-                // which now finds the existing row and updates it instead.
+                // Another request inserted this LayerId first. Drop our failed insert so the next
+                // iteration starts clean, then wait briefly for the winner's commit to become
+                // visible across connections before re-SELECTing. The backoff grows slightly with
+                // each attempt; on the final attempt the guard above no longer matches, so a
+                // genuine (non-race) failure still surfaces instead of being swallowed.
                 _dbContext.Entry(entity).State = EntityState.Detached;
+                await Task.Delay(5 * (attempt + 1), cancellationToken);
             }
         }
     }

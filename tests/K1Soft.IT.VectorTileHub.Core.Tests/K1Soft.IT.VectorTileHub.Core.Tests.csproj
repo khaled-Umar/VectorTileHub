@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\K1Soft.IT.VectorTileHub.Core\K1Soft.IT.VectorTileHub.Core.csproj" />
+    <ProjectReference Include="..\..\src\K1Soft.IT.VectorTileHub.Storage\K1Soft.IT.VectorTileHub.Storage.csproj" />
   </ItemGroup>
 
 </Project>
