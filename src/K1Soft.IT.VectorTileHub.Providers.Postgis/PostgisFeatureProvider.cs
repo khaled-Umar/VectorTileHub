@@ -11,16 +11,18 @@ namespace K1Soft.IT.VectorTileHub.Providers.Postgis;
 /// PostGIS feature provider. Queries a PostgreSQL/PostGIS table, intersecting the requested tile
 /// envelope against the geometry column and returning each feature's geometry as OGC WKB plus the
 /// configured attributes. Mirrors the SqlServer/Oracle providers: the envelope is reprojected to the
-/// source SRID (Web&#160;Mercator&#8594;lon/lat when SourceSrid is 4326) and the served geometry is
-/// reprojected back to 3857 for tiling.
+/// source SRID for the spatial filter and the served geometry is reprojected back to Web Mercator for
+/// tiling, via <see cref="ICoordinateReprojector"/> (any source CRS, including custom WKT projections).
 /// </summary>
 public sealed class PostgisFeatureProvider : IVectorTileFeatureProvider
 {
     private readonly IConfiguration _configuration;
+    private readonly ICoordinateReprojector _reprojector;
 
-    public PostgisFeatureProvider(IConfiguration configuration)
+    public PostgisFeatureProvider(IConfiguration configuration, ICoordinateReprojector reprojector)
     {
         _configuration = configuration;
+        _reprojector = reprojector;
     }
 
     public string ProviderType => "Postgis";
@@ -28,6 +30,7 @@ public sealed class PostgisFeatureProvider : IVectorTileFeatureProvider
     public async Task<VectorTileFeatureBatch> GetFeaturesAsync(VectorTileFeatureQuery query, CancellationToken cancellationToken)
     {
         var layer = query.LayerConfig;
+        var sourceCrs = CoordinateReferenceSystem.FromProvider(layer.Provider);
         await using var connection = new NpgsqlConnection(ResolveConnectionString(layer.Provider));
         await connection.OpenAsync(cancellationToken);
 
@@ -38,8 +41,8 @@ public sealed class PostgisFeatureProvider : IVectorTileFeatureProvider
             command.CommandTimeout = commandTimeout;
         }
 
-        // The stored geometry is assumed to be in SourceSrid; intersect the envelope in that same SRID.
-        var envelope = layer.Provider.SourceSrid == 4326 ? ToGeographicEnvelope(query.Envelope) : query.Envelope;
+        // The stored geometry is in SourceSrid; reproject the Web Mercator tile envelope into that SRID.
+        var envelope = _reprojector.Reproject(query.Envelope, CoordinateReferenceSystem.WebMercator, sourceCrs);
         command.Parameters.Add(new NpgsqlParameter("minx", NpgsqlDbType.Double) { Value = envelope.MinX });
         command.Parameters.Add(new NpgsqlParameter("miny", NpgsqlDbType.Double) { Value = envelope.MinY });
         command.Parameters.Add(new NpgsqlParameter("maxx", NpgsqlDbType.Double) { Value = envelope.MaxX });
@@ -70,7 +73,7 @@ public sealed class PostgisFeatureProvider : IVectorTileFeatureProvider
             features.Add(new VectorTileFeature
             {
                 Id = dataReader[layer.Provider.IdColumn],
-                Geometry = ToServingGeometry(reader.Read(wkb), layer.Provider.SourceSrid),
+                Geometry = _reprojector.Reproject(reader.Read(wkb), sourceCrs, CoordinateReferenceSystem.WebMercator),
                 Attributes = attributes
             });
         }
@@ -147,46 +150,5 @@ public sealed class PostgisFeatureProvider : IVectorTileFeatureProvider
         }
 
         return value;
-    }
-
-    private static Envelope ToGeographicEnvelope(Envelope mercator)
-    {
-        var min = WebMercatorToLonLat(mercator.MinX, mercator.MinY);
-        var max = WebMercatorToLonLat(mercator.MaxX, mercator.MaxY);
-        return new Envelope(min.lon, max.lon, min.lat, max.lat);
-    }
-
-    private static (double lon, double lat) WebMercatorToLonLat(double x, double y)
-    {
-        const double originShift = 20037508.342789244;
-        var lon = x / originShift * 180.0;
-        var lat = y / originShift * 180.0;
-        lat = 180.0 / Math.PI * (2.0 * Math.Atan(Math.Exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
-        return (lon, lat);
-    }
-
-    private static Geometry ToServingGeometry(Geometry geometry, int sourceSrid)
-    {
-        if (sourceSrid != 4326)
-        {
-            return geometry;
-        }
-
-        var copy = geometry.Copy();
-        copy.Apply(new WebMercatorCoordinateFilter());
-        copy.GeometryChanged();
-        copy.SRID = 3857;
-        return copy;
-    }
-
-    private sealed class WebMercatorCoordinateFilter : ICoordinateFilter
-    {
-        public void Filter(Coordinate coord)
-        {
-            const double originShift = 20037508.342789244;
-            coord.X = coord.X * originShift / 180.0;
-            var y = Math.Log(Math.Tan((90.0 + coord.Y) * Math.PI / 360.0)) / (Math.PI / 180.0);
-            coord.Y = y * originShift / 180.0;
-        }
     }
 }

@@ -10,10 +10,12 @@ namespace K1Soft.IT.VectorTileHub.Providers.SqlServer;
 public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
 {
     private readonly IConfiguration _configuration;
+    private readonly ICoordinateReprojector _reprojector;
 
-    public SqlServerFeatureProvider(IConfiguration configuration)
+    public SqlServerFeatureProvider(IConfiguration configuration, ICoordinateReprojector reprojector)
     {
         _configuration = configuration;
+        _reprojector = reprojector;
     }
 
     public string ProviderType => "SqlServer";
@@ -21,6 +23,7 @@ public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
     public async Task<VectorTileFeatureBatch> GetFeaturesAsync(VectorTileFeatureQuery query, CancellationToken cancellationToken)
     {
         var layer = query.LayerConfig;
+        var sourceCrs = CoordinateReferenceSystem.FromProvider(layer.Provider);
         var connectionString = ResolveConnectionString(layer.Provider);
         await using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync(cancellationToken);
@@ -32,7 +35,9 @@ public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
             command.CommandTimeout = commandTimeout;
         }
 
-        command.Parameters.Add("@envelope", SqlDbType.VarBinary).Value = BuildEnvelopeWkb(query.Envelope, layer.Provider.SourceSrid);
+        // The tile envelope arrives in Web Mercator; reproject it into the stored CRS for the spatial filter.
+        var filterEnvelope = _reprojector.Reproject(query.Envelope, CoordinateReferenceSystem.WebMercator, sourceCrs);
+        command.Parameters.Add("@envelope", SqlDbType.VarBinary).Value = BuildEnvelopeWkb(filterEnvelope);
         command.Parameters.Add("@srid", SqlDbType.Int).Value = layer.Provider.SourceSrid;
 
         for (var i = 0; i < filterValues.Length; i++)
@@ -59,7 +64,7 @@ public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
             features.Add(new VectorTileFeature
             {
                 Id = dataReader[layer.Provider.IdColumn],
-                Geometry = ToServingGeometry(reader.Read(wkb), layer.Provider.SourceSrid),
+                Geometry = _reprojector.Reproject(reader.Read(wkb), sourceCrs, CoordinateReferenceSystem.WebMercator),
                 Attributes = attributes
             });
         }
@@ -109,13 +114,8 @@ public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
         return sql.ToString();
     }
 
-    private static byte[] BuildEnvelopeWkb(Envelope envelope, int srid)
+    private static byte[] BuildEnvelopeWkb(Envelope envelope)
     {
-        if (srid == 4326)
-        {
-            envelope = ToGeographicEnvelope(envelope);
-        }
-
         var geometryFactory = new GeometryFactory();
         var coordinates = new[]
         {
@@ -127,47 +127,6 @@ public sealed class SqlServerFeatureProvider : IVectorTileFeatureProvider
         };
         var polygon = geometryFactory.CreatePolygon(coordinates);
         return new WKBWriter().Write(polygon);
-    }
-
-    private static Envelope ToGeographicEnvelope(Envelope mercator)
-    {
-        var min = WebMercatorToLonLat(mercator.MinX, mercator.MinY);
-        var max = WebMercatorToLonLat(mercator.MaxX, mercator.MaxY);
-        return new Envelope(min.lon, max.lon, min.lat, max.lat);
-    }
-
-    private static (double lon, double lat) WebMercatorToLonLat(double x, double y)
-    {
-        const double originShift = 20037508.342789244;
-        var lon = x / originShift * 180.0;
-        var lat = y / originShift * 180.0;
-        lat = 180.0 / Math.PI * (2.0 * Math.Atan(Math.Exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
-        return (lon, lat);
-    }
-
-    private static Geometry ToServingGeometry(Geometry geometry, int sourceSrid)
-    {
-        if (sourceSrid != 4326)
-        {
-            return geometry;
-        }
-
-        var copy = geometry.Copy();
-        copy.Apply(new WebMercatorCoordinateFilter());
-        copy.GeometryChanged();
-        copy.SRID = 3857;
-        return copy;
-    }
-
-    private sealed class WebMercatorCoordinateFilter : ICoordinateFilter
-    {
-        public void Filter(Coordinate coord)
-        {
-            const double originShift = 20037508.342789244;
-            coord.X = coord.X * originShift / 180.0;
-            var y = Math.Log(Math.Tan((90.0 + coord.Y) * Math.PI / 360.0)) / (Math.PI / 180.0);
-            coord.Y = y * originShift / 180.0;
-        }
     }
 
     private static string QuoteIdentifier(string value)

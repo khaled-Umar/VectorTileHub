@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace K1Soft.IT.VectorTileHub;
 
@@ -8,6 +9,7 @@ public static class VectorTileHubCoreServiceCollectionExtensions
     public static IServiceCollection AddVectorTileHubCore(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<VectorTileHubOptions>(configuration.GetSection("VectorTileHub"));
+        services.TryAddSingleton<ICoordinateReprojector, ProjNetCoordinateReprojector>();
         services.AddSingleton<IVectorTileLayerConfigProvider, JsonLayerConfigProvider>();
         services.AddSingleton<IVectorTileEncoder, MapboxVectorTileEncoder>();
         services.AddSingleton<IVectorTileVariantResolver, DefaultVariantResolver>();

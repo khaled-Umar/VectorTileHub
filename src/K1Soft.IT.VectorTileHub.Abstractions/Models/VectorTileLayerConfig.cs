@@ -38,6 +38,14 @@ public sealed class ProviderConfig
     public int SourceSrid { get; set; } = 3857;
 
     /// <summary>
+    /// Optional WKT definition of the source CRS, required only when <see cref="SourceSrid"/> is not one of the
+    /// built-in systems (4326 lon/lat or 3857 Web Mercator) — e.g. a local survey projection. When set it is
+    /// used to build the reprojection to/from the tiling CRS; the SRID is still used as the database SRID for
+    /// the spatial filter. Omit for 4326 / 3857.
+    /// </summary>
+    public string? SourceCrsWkt { get; set; }
+
+    /// <summary>
     /// Per-layer database command timeout, in seconds, applied to each feature query.
     /// Null = use the ADO.NET provider default (30s). 0 = no timeout (wait indefinitely).
     /// Useful for heavy low-zoom queries that exceed the default timeout.

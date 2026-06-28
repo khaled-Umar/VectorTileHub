@@ -8,10 +8,12 @@ namespace K1Soft.IT.VectorTileHub.Providers.Oracle;
 public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
 {
     private readonly IConfiguration _configuration;
+    private readonly ICoordinateReprojector _reprojector;
 
-    public OracleFeatureProvider(IConfiguration configuration)
+    public OracleFeatureProvider(IConfiguration configuration, ICoordinateReprojector reprojector)
     {
         _configuration = configuration;
+        _reprojector = reprojector;
     }
 
     public string ProviderType => "Oracle";
@@ -19,6 +21,7 @@ public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
     public async Task<VectorTileFeatureBatch> GetFeaturesAsync(VectorTileFeatureQuery query, CancellationToken cancellationToken)
     {
         var layer = query.LayerConfig;
+        var sourceCrs = CoordinateReferenceSystem.FromProvider(layer.Provider);
         await using var connection = new OracleConnection(ResolveConnectionString(layer.Provider));
         await connection.OpenAsync(cancellationToken);
 
@@ -30,7 +33,8 @@ public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
         }
 
         command.Parameters.Add(":srid", OracleDbType.Int32).Value = layer.Provider.SourceSrid;
-        var envelope = layer.Provider.SourceSrid == 4326 ? ToGeographicEnvelope(query.Envelope) : query.Envelope;
+        // The tile envelope arrives in Web Mercator; reproject it into the stored CRS for the spatial filter.
+        var envelope = _reprojector.Reproject(query.Envelope, CoordinateReferenceSystem.WebMercator, sourceCrs);
         command.Parameters.Add(":minx", OracleDbType.Double).Value = envelope.MinX;
         command.Parameters.Add(":miny", OracleDbType.Double).Value = envelope.MinY;
         command.Parameters.Add(":maxx", OracleDbType.Double).Value = envelope.MaxX;
@@ -60,7 +64,7 @@ public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
             features.Add(new VectorTileFeature
             {
                 Id = dataReader[layer.Provider.IdColumn],
-                Geometry = ToServingGeometry(reader.Read(wkb), layer.Provider.SourceSrid),
+                Geometry = _reprojector.Reproject(reader.Read(wkb), sourceCrs, CoordinateReferenceSystem.WebMercator),
                 Attributes = attributes
             });
         }
@@ -133,46 +137,5 @@ public sealed class OracleFeatureProvider : IVectorTileFeatureProvider
         }
 
         return value;
-    }
-
-    private static NetTopologySuite.Geometries.Envelope ToGeographicEnvelope(NetTopologySuite.Geometries.Envelope mercator)
-    {
-        var min = WebMercatorToLonLat(mercator.MinX, mercator.MinY);
-        var max = WebMercatorToLonLat(mercator.MaxX, mercator.MaxY);
-        return new NetTopologySuite.Geometries.Envelope(min.lon, max.lon, min.lat, max.lat);
-    }
-
-    private static (double lon, double lat) WebMercatorToLonLat(double x, double y)
-    {
-        const double originShift = 20037508.342789244;
-        var lon = x / originShift * 180.0;
-        var lat = y / originShift * 180.0;
-        lat = 180.0 / Math.PI * (2.0 * Math.Atan(Math.Exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
-        return (lon, lat);
-    }
-
-    private static NetTopologySuite.Geometries.Geometry ToServingGeometry(NetTopologySuite.Geometries.Geometry geometry, int sourceSrid)
-    {
-        if (sourceSrid != 4326)
-        {
-            return geometry;
-        }
-
-        var copy = geometry.Copy();
-        copy.Apply(new WebMercatorCoordinateFilter());
-        copy.GeometryChanged();
-        copy.SRID = 3857;
-        return copy;
-    }
-
-    private sealed class WebMercatorCoordinateFilter : NetTopologySuite.Geometries.ICoordinateFilter
-    {
-        public void Filter(NetTopologySuite.Geometries.Coordinate coord)
-        {
-            const double originShift = 20037508.342789244;
-            coord.X = coord.X * originShift / 180.0;
-            var y = Math.Log(Math.Tan((90.0 + coord.Y) * Math.PI / 360.0)) / (Math.PI / 180.0);
-            coord.Y = y * originShift / 180.0;
-        }
     }
 }
